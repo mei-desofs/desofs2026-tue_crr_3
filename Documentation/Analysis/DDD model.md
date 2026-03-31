@@ -1,0 +1,112 @@
+@startuml
+
+package "User Aggregate" <<Aggregate>> {
+  class User <<Aggregate Root>> {
+    id : UUID
+    email : Email
+    passwordHash : string
+    role : Role
+  }
+  class Role <<Value Object>> {
+    CUSTOMER
+    MANAGER
+    ADMIN
+  }
+  class Email <<Value Object>> {
+    email : string
+  }
+  class Address <<Entity>> {
+    id : UUID
+    street : string
+    city : string
+    postalCode : string
+    country : string
+  }
+}
+
+package "Tea Aggregate" <<Aggregate>> {
+  class Tea <<Aggregate Root>> {
+    id : UUID
+    name : string
+    price : Money
+    stock : StockLevel
+    uploadImage(fileName : string, content : byte[])
+    deleteImage(fileName : string)
+  }
+  class TeaImage <<Entity>> {
+    id : UUID
+    fileName : string
+    filePath : string
+    sizeBytes : long
+    uploadedAt : datetime
+  }
+  class Category <<Entity>> {
+
+  class Money <<Value Object>> {
+    amount : decimal
+    currency : string
+  }
+  class StockLevel <<Value Object>> {
+    quantity : int
+  }
+}
+
+' =================== ORDER AGGREGATE ===================
+package "Order Aggregate" <<Aggregate>> {
+  class Order <<Aggregate Root>> {
+    id : UUID
+    userId : UUID
+    status : OrderStatus
+    totalPrice : Money
+    createdAt : datetime
+    confirm()
+    cancel()
+    ship()
+  }
+  class OrderItem <<Entity>> {
+    id : UUID
+    TeaId : UUID
+    quantity : int
+    unitPrice : Money
+    subtotal()
+  }
+  class Payment <<Entity>> {
+    id : UUID
+    amount : Money
+    status : PaymentStatus
+    provider : string
+    transactionId : string
+    process()
+  }
+  class OrderStatus <<Value Object>> {
+    PENDING
+    CONFIRMED
+    SHIPPED
+    DELIVERED
+    CANCELLED
+  }
+  class PaymentStatus <<Value Object>> {
+    PENDING
+    COMPLETED
+    FAILED
+    REFUNDED
+  }
+}
+
+User "1" --> "1" Role : has >
+User "1" --> "1" Email : identified by >
+User "1" --> "*" Address : has >
+
+Tea "1" --> "1" Money : priced at >
+Tea "1" --> "1" StockLevel : has >
+Tea "1" --> "0..*" TeaImage : has >
+
+Order "1" --> "1" OrderStatus : has >
+Order "1" --> "1..*" OrderItem : contains >
+Order "1" --> "1" Payment : paid via >
+Payment "1" --> "1" PaymentStatus : has >
+
+Order "1" ..> "1" User : placed by  >
+OrderItem "*" ..> "1" Tea : references >
+
+@enduml
