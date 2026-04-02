@@ -91,6 +91,15 @@ package "Order Aggregate" <<Aggregate>> {
     FAILED
     REFUNDED
   }
+  class SalesReport <<Entity>> {
+    id : UUID
+    reportName : string
+    startDate : datetime
+    endDate : datetime
+    generatedAt : datetime
+    filePath : string
+    compressToZip()
+  }
 }
 
 User "1" --> "1" Role : has >
