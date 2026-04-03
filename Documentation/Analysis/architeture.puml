@@ -1,0 +1,40 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor "Client" as Client
+
+package "System Architecture" {
+    
+    component "1. Presentation Layer" as Presentation {
+        [REST API] as API
+    }
+
+    component "2. Application Layer" as AppLayer {
+        [Application Services] as Services
+    }
+
+    component "3. Domain Layer (DDD)" as DomainLayer {
+        [Domain Model] as Domain
+    }
+
+    component "4. Infrastructure Layer" as InfraLayer {
+        [Database Repository] as Repo
+        [OS File Adapter] as OSAdapter
+    }
+}
+
+database "Relational Database" as DB
+node "Server Operating System" as OS {
+    [File System Utilities] as OSFS
+}
+
+Client .down.> API : HTTP Requests
+API .down.> Services : Data Transfer Objects
+Services .down.> Domain : Applies Business Rules
+Services .down.> Repo : Requests Data
+Services .down.> OSAdapter : Requests File Ops
+
+Repo .down.> DB : SQL
+OSAdapter .down.> OSFS : uses
+
+@enduml

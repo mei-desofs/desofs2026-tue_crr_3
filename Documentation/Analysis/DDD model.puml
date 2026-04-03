@@ -114,6 +114,7 @@ Order "1" --> "1" OrderStatus : has >
 Order "1" --> "1..*" OrderItem : contains >
 Order "1" --> "1" Payment : paid via >
 Payment "1" --> "1" PaymentStatus : has >
+SalesReport "1" ..> "*" Order : summarizes >
 
 Order "1" ..> "1" User : placed by  >
 OrderItem "*" ..> "1" Tea : references >
