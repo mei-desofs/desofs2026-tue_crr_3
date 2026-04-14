@@ -1,5 +1,17 @@
 @startuml
 
+package "Identity & Access Aggregate" <<Aggregate>> {
+  class Session <<Aggregate Root>> {
+    id : UUID
+    userId : UUID <<Reference>>
+    sessionToken : string
+    createdAt : datetime
+    expiresAt : datetime
+    isRevoked : boolean
+    isValid() : boolean
+  }
+}
+
 package "User Aggregate" <<Aggregate>> {
   class User <<Aggregate Root>> {
     id : UUID
@@ -40,8 +52,6 @@ package "Tea Aggregate" <<Aggregate>> {
     sizeBytes : long
     uploadedAt : datetime
   }
-  class Category <<Entity>> {
-
   class Money <<Value Object>> {
     amount : decimal
     currency : string
@@ -51,7 +61,6 @@ package "Tea Aggregate" <<Aggregate>> {
   }
 }
 
-' =================== ORDER AGGREGATE ===================
 package "Order Aggregate" <<Aggregate>> {
   class Order <<Aggregate Root>> {
     id : UUID
@@ -70,26 +79,12 @@ package "Order Aggregate" <<Aggregate>> {
     unitPrice : Money
     subtotal()
   }
-  class Payment <<Entity>> {
-    id : UUID
-    amount : Money
-    status : PaymentStatus
-    provider : string
-    transactionId : string
-    process()
-  }
   class OrderStatus <<Value Object>> {
     PENDING
     CONFIRMED
     SHIPPED
     DELIVERED
     CANCELLED
-  }
-  class PaymentStatus <<Value Object>> {
-    PENDING
-    COMPLETED
-    FAILED
-    REFUNDED
   }
   class SalesReport <<Entity>> {
     id : UUID
@@ -102,9 +97,30 @@ package "Order Aggregate" <<Aggregate>> {
   }
 }
 
+package "Payment Aggregate" <<Aggregate>> {
+  class Payment <<Aggregate Root>> {
+    id : UUID
+    orderId : UUID <<Reference>>
+    amount : Money
+    status : PaymentStatus
+    provider : string
+    transactionId : string
+    process()
+  }
+  class PaymentStatus <<Value Object>> {
+    PENDING
+    COMPLETED
+    FAILED
+    REFUNDED
+  }
+}
+
+' --- Relationships ---
 User "1" --> "1" Role : has >
 User "1" --> "1" Email : identified by >
 User "1" --> "*" Address : has >
+
+Session "*" ..> "1" User : authenticates >
 
 Tea "1" --> "1" Money : priced at >
 Tea "1" --> "1" StockLevel : has >
@@ -112,11 +128,13 @@ Tea "1" --> "0..*" TeaImage : has >
 
 Order "1" --> "1" OrderStatus : has >
 Order "1" --> "1..*" OrderItem : contains >
-Order "1" --> "1" Payment : paid via >
-Payment "1" --> "1" PaymentStatus : has >
 SalesReport "1" ..> "*" Order : summarizes >
 
-Order "1" ..> "1" User : placed by  >
+Order "1" ..> "1" User : placed by >
 OrderItem "*" ..> "1" Tea : references >
+
+Payment "*" ..> "1" Order : pays for >
+Payment "1" --> "1" PaymentStatus : has >
+
 
 @enduml

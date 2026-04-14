@@ -3,10 +3,13 @@ skinparam componentStyle rectangle
 
 actor "Client" as Client
 
+cloud "External Payment Provider" as EPP <<External Service>>
+
 package "System Architecture" {
-    
+
     component "1. Presentation Layer" as Presentation {
-        [REST API] as API
+        [AIM Middleware] as AuthFilter
+        [REST API Controllers] as API
     }
 
     component "2. Application Layer" as AppLayer {
@@ -20,6 +23,7 @@ package "System Architecture" {
     component "4. Infrastructure Layer" as InfraLayer {
         [Database Repository] as Repo
         [OS File Adapter] as OSAdapter
+        [Payment API Client] as PaymentClient
     }
 }
 
@@ -28,13 +32,18 @@ node "Server Operating System" as OS {
     [File System Utilities] as OSFS
 }
 
-Client .down.> API : HTTP Requests
-API .down.> Services : Data Transfer Objects
+
+Client .down.> AuthFilter : HTTP Requests
+AuthFilter .down.> API : Validates Token
+API .down.> Services : DTOs
+
 Services .down.> Domain : Applies Business Rules
 Services .down.> Repo : Requests Data
 Services .down.> OSAdapter : Requests File Ops
+Services .down.> PaymentClient : Init Payment
 
 Repo .down.> DB : SQL
 OSAdapter .down.> OSFS : uses
+PaymentClient .right.> EPP: API Call
 
 @enduml
