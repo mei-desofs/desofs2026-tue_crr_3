@@ -31,7 +31,7 @@ Based on the defined Domain Model (DDD) and layered architecture, the following 
   Represents payment status and transaction results.  
   This asset is highly sensitive as manipulation may result in financial fraud.
 
-- **Tea Stock Levels (`Tea Aggregate – StockLevel`)**  
+- **Tea Stock Levels (`Tea Aggregate: StockLevel`)**  
   Tracks product availability and is directly linked to business operations.  
   Incorrect values may lead to overselling or inconsistencies (violating NFR:02).
 
@@ -39,7 +39,7 @@ Based on the defined Domain Model (DDD) and layered architecture, the following 
   Stores all persistent data, including users, orders, and payments.  
   It is a central asset whose compromise affects the entire system.
 
-- **File System (Tea Image Storage – OS Integration)**  
+- **File System (Tea Image Storage: OS Integration)**  
   Used to store uploaded tea images (FR07).  
   Improper handling may lead to malicious file execution or server compromise.
 
