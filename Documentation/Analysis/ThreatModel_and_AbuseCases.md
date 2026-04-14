@@ -195,14 +195,221 @@ These threats are consistent with the architecture and requirements of the syste
 ## 6. Abuse Cases
 
 ### 6.1 Abuse Case Approach
+Abuse cases were defined to complement the threat model by describing how malicious actors may intentionally misuse legitimate system functionality.
+
+Each abuse case includes:
+
+- the threat actor;
+- the targeted functionality;
+- the misuse scenario;
+- the expected impact;
+- the related threat category;
+- the mitigation direction.
+
+---
 
 ### AC-01 – Brute-Force Login Attempt
+**Threat Actor:**  
+External attacker
+
+**Target Functionality:**  
+User authentication
+
+**Related Requirements:**  
+FR-02, NFR-08
+
+**Abuse Scenario:**  
+The attacker repeatedly submits login attempts against valid or guessed email addresses in order to discover valid credentials.
+
+**Expected Impact:**  
+Account compromise, unauthorized access, and possible privilege escalation if privileged accounts are targeted.
+
+**Related Threat Category:**  
+Spoofing, Denial of Service
+
+**Mitigation Direction:**  
+Rate limiting, secure password storage, anomaly detection, and strong authentication controls.
+
+---
+
 ### AC-02 – Direct Access to Admin or Manager Endpoints
+**Threat Actor:**  
+Authenticated customer with malicious intent
+
+**Target Functionality:**  
+Inventory management, order status updates, and sales report export
+
+**Related Requirements:**  
+FR-06, FR-10, FR-13
+
+**Abuse Scenario:**  
+A regular customer sends crafted API requests directly to endpoints intended for `MANAGER` or `ADMIN`, attempting to bypass client-side restrictions.
+
+**Expected Impact:**  
+Unauthorized modification of teas, order states, or access to sensitive business reports.
+
+**Related Threat Category:**  
+Elevation of Privilege
+
+**Mitigation Direction:**  
+Strict server-side RBAC enforcement and authorization checks on every restricted operation.
+
+---
+
 ### AC-03 – Manipulation of Stock Through Concurrent Orders
+**Threat Actor:**  
+Malicious or opportunistic authenticated customer
+
+**Target Functionality:**  
+Order placement and stock allocation
+
+**Related Requirements:**  
+FR-08, FR-09, NFR-02, NFR-05
+
+**Abuse Scenario:**  
+The attacker sends multiple concurrent order requests for the same tea item when stock is low, attempting to force inconsistent stock updates.
+
+**Expected Impact:**  
+Negative stock values, overselling, and business logic inconsistency.
+
+**Related Threat Category:**  
+Tampering
+
+**Mitigation Direction:**  
+Transactional enforcement, locking mechanisms, and atomic stock validation and update operations.
+
+---
+
 ### AC-04 – Malicious Image Upload
+**Threat Actor:**  
+Compromised or malicious `MANAGER`/`ADMIN`
+
+**Target Functionality:**  
+Tea image management
+
+**Related Requirements:**  
+FR-07
+
+**Abuse Scenario:**  
+A privileged user uploads a malicious file disguised as an image in an attempt to store executable or dangerous content on the server.
+
+**Expected Impact:**  
+Server compromise, malicious file storage, or later exploitation through insecure file handling.
+
+**Related Threat Category:**  
+Tampering, Elevation of Privilege
+
+**Mitigation Direction:**  
+Strict file type validation, safe storage location, filename randomization, and permission hardening.
+
+---
+
 ### AC-05 – Payment State Forgery
+**Threat Actor:**  
+Authenticated customer or API attacker
+
+**Target Functionality:**  
+Payment processing
+
+**Related Requirements:**  
+FR-11, NFR-01, NFR-05
+
+**Abuse Scenario:**  
+The attacker tampers with the client request or API payload in an attempt to force the payment status to `COMPLETED` without a legitimate successful payment.
+
+**Expected Impact:**  
+Financial loss, fraudulent order confirmation, and compromised transaction integrity.
+
+**Related Threat Category:**  
+Tampering
+
+**Mitigation Direction:**  
+Server-side validation of payment state transitions, trusted payment workflow enforcement, and audit logging.
+
+---
+
 ### AC-06 – Sensitive Data Enumeration Through API Errors
+**Threat Actor:**  
+External attacker
+
+**Target Functionality:**  
+Authentication, registration, order access, and general API interaction
+
+**Related Requirements:**  
+NFR-03, NFR-04
+
+**Abuse Scenario:**  
+The attacker intentionally sends malformed or unauthorized requests to observe differences in API responses, error messages, or timing behaviour.
+
+**Expected Impact:**  
+Disclosure of valid accounts, internal identifiers, application structure, or sensitive implementation details.
+
+**Related Threat Category:**  
+Information Disclosure
+
+**Mitigation Direction:**  
+Standardized generic error handling, controlled response content, and consistent validation behaviour.
+
+---
+
 ### AC-07 – Sales Report Abuse
+**Threat Actor:**  
+Unauthorized or low-privilege authenticated user
+
+**Target Functionality:**  
+Sales report export
+
+**Related Requirements:**  
+FR-13
+
+**Abuse Scenario:**  
+An attacker attempts to access or generate sales reports containing business-sensitive data by manipulating API requests or report parameters.
+
+**Expected Impact:**  
+Disclosure of commercially sensitive information, customer activity patterns, and business metrics.
+
+**Related Threat Category:**  
+Information Disclosure, Elevation of Privilege
+
+**Mitigation Direction:**  
+Authorization checks, strict validation of report generation permissions, and access-controlled export mechanisms.
+
+---
+
 ### AC-08 – API Flooding
+**Threat Actor:**  
+External attacker or bot
+
+**Target Functionality:**  
+Login, registration, catalog browsing, order placement, and upload endpoints
+
+**Related Requirements:**  
+NFR-06, NFR-07, NFR-08
+
+**Abuse Scenario:**  
+The attacker sends a large volume of requests in order to exhaust API, database, or file-handling resources.
+
+**Expected Impact:**  
+Service degradation, request failures, increased latency, and possible denial of service.
+
+**Related Threat Category:**  
+Denial of Service
+
+**Mitigation Direction:**  
+Rate limiting, throttling, timeout controls, and operational monitoring.
+
+---
+
 
 ## 7. Traceability Between Threats and Abuse Cases
+The abuse cases are directly derived from the identified STRIDE threats and from the most security-sensitive requirements of the system.
+
+In particular:
+
+- authentication abuse cases support spoofing analysis;
+- role bypass abuse cases support elevation of privilege analysis;
+- stock and payment manipulation abuse cases support tampering analysis;
+- report and error-based enumeration abuse cases support information disclosure analysis;
+- flooding abuse cases support denial of service analysis.
+
+This traceability strengthens the consistency of the Phase 1 deliverable and supports later security testing activities.
