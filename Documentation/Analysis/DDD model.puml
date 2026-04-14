@@ -1,6 +1,6 @@
 @startuml
 
-package "Identity & Access Aggregate" <<Aggregate>> {
+package "IAM Aggregate" <<Aggregate>> {
   class Session <<Aggregate Root>> {
     id : UUID
     userId : UUID <<Reference>>
