@@ -1,6 +1,6 @@
 # 1. Risk assessment and Mitigations
 ## 1.1 Risk Assessment and Methodology
-A qualitative risk assessment methodology was adopted based on the following formula:**Risk = Likelihood x Impact**.
+A qualitative risk assessment methodology was adopted based on the following formula: **Risk = Likelihood x Impact**.
 Each factor is evaluated on a three:level sclale
 | Level | Likelihood | Impact |
 |-------|------------|--------|
@@ -40,7 +40,7 @@ Based on the defined Domain Model (DDD) and layered architecture, the following 
   It is a central asset whose compromise affects the entire system.
 
 - **File System (Tea Image Storage – OS Integration)**  
-  Used to store uploaded tea images (FR:07).  
+  Used to store uploaded tea images (FR07).  
   Improper handling may lead to malicious file execution or server compromise.
 
 - **REST API Endpoints (Presentation Layer)**  
@@ -51,7 +51,7 @@ Based on the defined Domain Model (DDD) and layered architecture, the following 
   Used to maintain user sessions and authorize requests.  
   If compromised, attackers may impersonate legitimate users.
 
-## 6.3 Identified Risks
+## 1.3 Identified Risks
 
 ### R1 – Authentication Bypass
 
@@ -71,7 +71,7 @@ Attackers may access sensitive data and perform unauthorized operations, comprom
 **Impact:** High (3)  
 **Risk Level:** High (9)
 
-:::
+---
 
 ### R2 SQL Injection
 
@@ -190,9 +190,10 @@ This affects system availability and user experience.
 **Likelihood:** Medium (2)  
 **Impact:** Medium (2)  
 **Risk Level:** Medium (4)
+
 ---
 
-## 6.4 Mitigation Strategies
+## 1.4 Mitigation Strategies
 
 ### R1 Authentication Bypass
 
