@@ -9,9 +9,9 @@ Each factor is evaluated on a three:level sclale
 | High  | 3          | 3      |
 
 Risk levels are classified as: 
--Low: 1 to 2;
--Medium: 3 to 4;
--High: 6 to 9.
+- Low: 1 to 2;
+- Medium: 3 to 4;
+- High: 6 to 9.
 
 This methodology allows prioritization of threats affecting critical system assets such as user credentials, finacncial transactions, stock management and file system operations.
 
