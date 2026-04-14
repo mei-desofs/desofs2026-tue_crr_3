@@ -202,7 +202,7 @@ This affects system availability and user experience.
 - Use secure password hashing (`bcrypt`)
 - Implement JWT authentication with expiration time
 - Enforce Role-Based Access Control (RBAC) in the Application Layer
-- Apply rate limiting on login endpoints (NFR-08)
+- Apply rate limiting on login endpoints (NFR08)
 - Use generic error messages to avoid information leakage (NFR-03)
 
 **Justification:**  
