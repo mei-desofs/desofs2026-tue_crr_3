@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor User
+actor "Hacker / Malicious User" as Hacker
+rectangle "Online Tea Store Backend" {
+  usecase "Authenticate with\nemail and password" as UC1
+  usecase "Validate session token" as UC2
+  usecase "Return generic\nerror message" as UC3
+  usecase "Apply rate limiting" as UC4
+  usecase "Lock or delay after\nrepeated failed attempts" as UC5
+
+  usecase "Brute-force\nauthentication" as AB1
+  usecase "Enumerate valid\naccounts" as AB2
+}
+
+User --> UC1
+UC1 .> UC2 : <<includes>>
+
+Hacker --> AB1
+AB1 .> AB2 : <<includes>>
+
+AB1 ..> UC1 : <<threatens>>
+UC3 ..> AB2 : <<mitigates>>
+UC4 ..> AB1 : <<mitigates>>
+UC5 ..> AB1 : <<mitigates>>
+@enduml
