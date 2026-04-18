@@ -1,0 +1,36 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Customer
+actor Manager
+actor Admin
+actor "Malicious Customer" as Attacker
+
+rectangle "Online Tea Store Backend" {
+  usecase "Manage inventory" as UC1
+  usecase "Update order status" as UC2
+  usecase "Export sales report" as UC3
+  usecase "Validate role in middleware" as UC4
+  usecase "Enforce server-side\nauthorization" as UC5
+
+  usecase "Call restricted endpoint\ndirectly" as AB1
+  usecase "Bypass client-side\nrestrictions" as AB2
+}
+
+Manager --> UC1
+Manager --> UC2
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+
+Attacker --> AB1
+AB1 .> AB2 : <<includes>>
+
+AB1 ..> UC1 : <<threatens>>
+AB1 ..> UC2 : <<threatens>>
+AB1 ..> UC3 : <<threatens>>
+
+UC4 ..> AB1 : <<mitigates>>
+UC5 ..> AB1 : <<mitigates>>
+@enduml
