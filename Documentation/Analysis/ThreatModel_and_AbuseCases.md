@@ -4,7 +4,7 @@
 
 The threat model for the online tea store backend was developed using the **STRIDE** methodology and was explicitly aligned with the system architecture, domain model, and data flows.
 
-This approach was selected because the Phase 1 deliverable requires not only threat identification, but also clear documentation of system components, external entities, trust boundaries, and relevant data flows. In this project, the threat analysis was therefore performed with direct reference to the system’s DFD-oriented architectural view, rather than only from a purely textual perspective. 
+This approach was selected because the Phase 1 deliverable requires not only threat identification, but also clear documentation of system components, external entities, trust boundaries, and relevant data flows. In this project, the threat analysis was therefore performed with direct reference to the system’s DFD-oriented architectural view. 
 
 The analysis considered the following project-specific characteristics:
 
