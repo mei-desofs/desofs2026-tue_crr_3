@@ -64,8 +64,12 @@ FR02 (Authentication), NFR03 (Secure Error Handling)
 **Description:**  
 Improper authentication mechanisms or weak token validation may allow unauthorized users to gain access to privileged roles such as ADMIN or MANAGER.
 
+**Attacker Objective:**  
+Gain unauthorized access to the system and escalate privileges to perform administrative actions.
+
 **Threat Impact:**  
 Attackers may access sensitive data and perform unauthorized operations, compromising both confidentiality and integrity of the system.
+
 
 **Likelihood:** High (3)  
 **Impact:** High (3)  
@@ -83,6 +87,9 @@ NFR01 (Input Validation), NFR05 (Data Integrity)
 
 **Description:**  
 Improper validation or sanitization of user input in API requests may allow attackers to inject malicious SQL queries.
+
+**Attacker Objective:**  
+Access, modify, or extract sensitive data from the database (users, orders, payments).
 
 **Threat Impact:**  
 This may result in unauthorized access, modification, or deletion of data in users, orders, and payments.
@@ -104,6 +111,9 @@ FR09 (Stock Allocation), NFR02 (Concurrency Handling)
 **Description:**  
 Simultaneous purchase requests for the same product may lead to inconsistent stock values if concurrency is not properly handled.
 
+**Attacker Objective:**  
+Exploit race conditions to purchase more items than available or manipulate stock behavior.
+
 **Threat Impact:**  
 This may result in negative stock levels, overselling, and data inconsistency.
 
@@ -123,6 +133,9 @@ FR07 (OS File Operations), NFR01 (Input Validation)
 
 **Description:**  
 Unrestricted file upload functionality may allow attackers to upload malicious or executable files to the server.
+
+**Attacker Objective:**  
+Gain remote access to the server or execute malicious code.
 
 **Threat Impact:**  
 This may lead to server compromise, execution of malicious code, or data breaches.
@@ -144,6 +157,9 @@ FR10 (Payment Processing), NFR05 (Data Integrity)
 **Description:**  
 An attacker may attempt to manipulate the payment status, for example by forcing a transaction to be marked as COMPLETED.
 
+**Attacker Objective:**  
+Obtain products or services without completing a legitimate payment.
+
 **Threat Impact:**  
 This may lead to financial fraud, incorrect order processing, and revenue loss.
 
@@ -164,6 +180,9 @@ NFR03 (Secure Error Handling), NFR01 (Data Protection)
 **Description:**  
 Improper handling of API responses may expose sensitive information such as passwordHash or internal system data.
 
+**Attacker Objective:**  
+Collect sensitive information to perform further attacks (e.g., credential reuse, privilege escalation).
+
 **Threat Impact:**  
 This may result in credential compromise and violation of data confidentiality.
 
@@ -183,6 +202,9 @@ NFR08 (Rate Limiting)
 
 **Description:**  
 Excessive or malicious requests may overload the system, leading to reduced performance or service unavailability.
+
+**Attacker Objective:**  
+Disrupt system availability and degrade service for legitimate users.
 
 **Threat Impact:**  
 This affects system availability and user experience.
