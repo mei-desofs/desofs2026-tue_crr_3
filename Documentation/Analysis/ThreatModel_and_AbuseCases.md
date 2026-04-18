@@ -1,415 +1,473 @@
 # Threat Model and Abuse Cases
 
 ## 1. Threat Modeling Approach
-The threat model for our online tea store backend was developed using the **STRIDE** methodology. This approach was selected because it provides a structured way to identify threats across the main system elements, namely external entities, processes, data flows, and data stores.
 
-The analysis was based on the system requirements, the layered architecture, and the Domain-Driven Design model. Special attention was given to the following security-relevant characteristics of the system:
+The threat model for the online tea store backend was developed using the **STRIDE** methodology and was explicitly aligned with the system architecture, domain model, and data flows.
 
+This approach was selected because the Phase 1 deliverable requires not only threat identification, but also clear documentation of system components, external entities, trust boundaries, and relevant data flows. In this project, the threat analysis was therefore performed with direct reference to the system’s DFD-oriented architectural view, rather than only from a purely textual perspective. 
+
+The analysis considered the following project-specific characteristics:
+
+- a REST-based backend application;
 - authentication and authorization with multiple roles;
-- exposure of a REST API;
 - relational database persistence;
-- operating system interactions for file handling.
+- operating system interactions for image handling;
+- interaction with an external payment provider. 
 
-The main assets considered in this threat model include user credentials, authentication tokens, order and payment data, tea stock levels, uploaded images, and API endpoints. These assets were mapped against relevant trust boundaries and attack surfaces in order to identify realistic threats.
-
----
-
-## 2. System Scope and Security-Relevant Components
-The threat model covers the backend application of the online tea store, including the following major components:
-
-- **Client Applications / API Consumers**  
-  External actors interacting with the system through HTTP requests.
-
-- **REST API (Presentation Layer)**  
-  Entry point for registration, authentication, catalog access, order placement, payment processing, inventory management, and report export.
-
-- **Application Layer / Services**  
-  Contains the orchestration logic for use cases such as placing orders, updating stock, processing payments, and enforcing role-based access.
-
-- **Domain Layer**  
-  Contains the main aggregates: `User`, `Tea`, and `Order`, as well as related domain entities and value objects.
-
-- **Relational Database**  
-  Persistent storage for users, teas, orders, order items, payment state, and sales reports.
-
-- **File System / OS Integration**  
-  Used for upload, storage, retrieval, and deletion of tea images.
+The most security-relevant assets considered in the model are authentication credentials, session tokens, user profile data, order and payment data, stock information, uploaded tea images, and generated sales reports.
 
 ---
 
-## 3. Trust Boundaries
-The following trust boundaries were identified:
+## 2. DFD-Oriented Threat Model Scope
 
-1. **External Client -> REST API**  
-   Requests originating from external clients cross into the trusted backend environment.
+The threat model is based on the main elements represented in the system architecture and domain diagrams.
 
-2. **REST API / Application Layer -> Database**  
-   Application logic interacts with persistent storage and must ensure data integrity and query safety.
+### External Entities
+- **Client**
+- **External Payment Provider**
 
-3. **REST API / Application Layer -> File System**  
-   Image upload and deletion operations cross into the operating system environment.
+### Processes
+- **AIM Middleware**
+- **REST API Controllers**
+- **Application Services**
+- **Payment API Client**
+- **Database Repository**
+- **OS File Adapter**
 
-4. **Authentication Boundary**  
-   Unauthenticated users become authenticated users after successful credential validation and token issuance.
+### Data Stores / Persistent Components
+- **Relational Database**
+- **Server File System Utilities**
 
-These trust boundaries are important because they represent the main locations where malicious input, privilege abuse, tampering, and information disclosure attempts may occur.
+### Security-Relevant Domain Areas
+- **IAM Aggregate**
+- **User Aggregate**
+- **Tea Aggregate**
+- **Order Aggregate**
+- **Payment Aggregate**
 
----
-
-## 4. STRIDE Analysis
-
-### 4.1 Spoofing
-**Threat:** Account impersonation through stolen credentials or forged authentication tokens.
-
-**Affected Components:**  
-`User Aggregate`, authentication endpoints, JWT/session token handling.
-
-**Attack Vector:**  
-An attacker may attempt credential stuffing, brute-force authentication, token replay, or exploitation of weak session validation.
-
-**Impact:**  
-Unauthorized access to user accounts or privileged roles such as `MANAGER` or `ADMIN`.
-
-**Related Requirements:**  
-FR-02, FR-03, NFR-03, NFR-08
-
-**Mitigation Direction:**  
-Strong password hashing, secure token validation, token expiration, role verification, and rate limiting on sensitive endpoints.
+The threat analysis focuses on how data moves between these elements and how attackers may exploit those flows.
 
 ---
 
-### 4.2 Tampering
-**Threat:** Unauthorized modification of system data or state.
+## 3. Trust Boundaries and Data Flows
 
-**Affected Components:**  
-`Order Aggregate`, `Tea Aggregate`, payment processing, relational database, file storage.
+The following trust boundaries were identified in the system:
 
-**Attack Vector:**  
-An attacker may manipulate request payloads, attempt SQL injection, alter payment status transitions, tamper with stock updates, or upload malicious files disguised as tea images.
+### TB1 – External Client to Trusted Backend
+This boundary is crossed when the **Client** sends HTTP requests to the backend through the **AIM Middleware** and **REST API Controllers**.
 
-**Impact:**  
-Corruption of stock levels, fraudulent payment completion, compromised order integrity, or malicious files stored on the server.
+**Main flows crossing this boundary:**
+- login and registration requests;
+- catalog browsing requests;
+- order placement requests;
+- payment initiation requests;
+- image upload requests;
+- report export requests.
 
-**Related Requirements:**  
-FR-07, FR-09, FR-11, NFR-01, NFR-02, NFR-05
+This is the primary attack surface of the application.
 
-**Mitigation Direction:**  
-Prepared statements, strict backend validation, transactional controls, secure state transition validation, file type verification, and safe storage practices.
+### TB2 – Backend to Relational Database
+This boundary is crossed when **Application Services** interact with the **Database Repository**, which then persists and retrieves data from the **Relational Database**.
 
----
+**Main flows crossing this boundary:**
+- user lookup and persistence;
+- stock reads and updates;
+- order creation and status update;
+- payment persistence;
+- sales report data retrieval.
 
-### 4.3 Repudiation
-**Threat:** Users or administrators deny having performed a given action.
+### TB3 – Backend to Server File System
+This boundary is crossed when **Application Services** request file operations through the **OS File Adapter**, which interacts with the server operating system and file system utilities.
 
-**Affected Components:**  
-Authentication flows, order updates, payment processing, inventory management, and report export.
+**Main flows crossing this boundary:**
+- image upload;
+- image retrieval;
+- image deletion.
 
-**Attack Vector:**  
-A malicious actor may deny having changed an order status, uploaded a file, processed a payment, or generated a report if no auditable logging exists.
+### TB4 – Backend to External Payment Provider
+This boundary is crossed when **Application Services** initiate payment-related operations through the **Payment API Client**, which communicates with the **External Payment Provider**.
 
-**Impact:**  
-Loss of traceability, difficulty in incident investigation, and inability to attribute actions to specific users.
+**Main flows crossing this boundary:**
+- payment initiation;
+- payment confirmation or failure status exchange.
 
-**Related Requirements:**  
-FR-10, FR-11, FR-13, NFR-09
-
-**Mitigation Direction:**  
-Audit logging, timestamped records, traceability of privileged actions, and secure retention of logs.
-
----
-
-### 4.4 Information Disclosure
-**Threat:** Exposure of confidential or internal data.
-
-**Affected Components:**  
-REST API responses, authentication flow, database queries, report export, and file access.
-
-**Attack Vector:**  
-Sensitive fields may be leaked through verbose error messages, insecure DTO mapping, broken access control, predictable file paths, or insufficient protection of exported reports.
-
-**Impact:**  
-Disclosure of password hashes, customer details, internal identifiers, order data, or business-sensitive sales information.
-
-**Related Requirements:**  
-FR-04, FR-13, NFR-03, NFR-04
-
-**Mitigation Direction:**  
-Least-privilege access, response filtering, generic error handling, strict authorization checks, and access-controlled exports.
+### TB5 – Authentication and Authorization Boundary
+This boundary separates unauthenticated users from authenticated users and privileged roles. It is crossed after successful authentication and token validation by the **AIM Middleware** and related IAM/session logic.
 
 ---
 
-### 4.5 Denial of Service
-**Threat:** System resources become unavailable or degraded.
+## 4. STRIDE Analysis by DFD Element
 
-**Affected Components:**  
-REST API, authentication endpoints, payment processing endpoints, image upload functionality, and database connectivity.
+### 4.1 External Entity: Client
 
-**Attack Vector:**  
-An attacker may flood login, registration, catalog, or order endpoints, upload oversized files, or trigger repeated expensive operations.
+The **Client** is an external entity and therefore untrusted by default. All incoming requests from this entity must be treated as potentially malicious.
 
-**Impact:**  
-Reduced availability, slower response times, failed transactions, and degraded user experience.
+#### Spoofing
+An attacker may impersonate a legitimate user by using stolen credentials or replaying session tokens during the flow from **Client -> AIM Middleware -> REST API Controllers**.
 
-**Related Requirements:**  
-NFR-06, NFR-07, NFR-08
+#### Tampering
+The client may manipulate payloads related to order creation, payment initiation, image upload, or report parameters before they reach backend validation.
 
-**Mitigation Direction:**  
-Rate limiting, request throttling, timeouts, input size restrictions, graceful fault handling, and operational monitoring.
+#### Repudiation
+A malicious user may later deny having placed an order, triggered a payment, or uploaded an image unless those actions are properly logged and attributed.
+
+#### Information Disclosure
+The client may probe the API for differences in response bodies, status codes, or timing in order to enumerate accounts, identify internal objects, or infer protected business information.
+
+#### Denial of Service
+The client may send a large number of requests to login, registration, catalog, order, report, or upload endpoints, exhausting backend resources.
+
+#### Elevation of Privilege
+A normal authenticated customer may attempt to access endpoints intended for `MANAGER` or `ADMIN`, such as inventory management or sales report export.
 
 ---
 
-### 4.6 Elevation of Privilege
-**Threat:** A lower-privileged user gains access to higher-privileged functionality.
+### 4.2 Process: AIM Middleware and REST API Controllers
 
-**Affected Components:**  
-Role enforcement in API endpoints, inventory management, order status updates, report export, and file operations.
+The **AIM Middleware** and **REST API Controllers** form the main entry point into the trusted backend and are directly exposed to the external client boundary.
 
-**Attack Vector:**  
-A `CUSTOMER` may attempt direct requests to endpoints intended for `MANAGER` or `ADMIN`, or exploit broken authorization checks in the application layer.
+#### Spoofing
+Weak token validation may allow forged or expired session tokens to be accepted during the authentication and authorization flow.
 
-**Impact:**  
-Unauthorized inventory changes, report access, file manipulation, or order state modification.
+#### Tampering
+Improper request validation may allow attackers to submit malicious payloads that alter business behaviour or later reach downstream components unsafely.
 
-**Related Requirements:**  
-FR-03, FR-06, FR-07, FR-10, FR-13
+#### Repudiation
+If authentication attempts, access denials, and privileged actions are not logged, malicious activity at the API layer may not be attributable.
 
-**Mitigation Direction:**  
-Strict server-side authorization, role verification on every protected endpoint, and defense-in-depth validation inside services.
+#### Information Disclosure
+Verbose validation errors or distinct authentication failure messages may leak whether a user exists or whether a token is structurally valid.
+
+#### Denial of Service
+These components are particularly exposed to flooding attacks because every external request passes through them first.
+
+#### Elevation of Privilege
+If middleware or controller-level authorization checks are incomplete, restricted endpoints may become reachable by lower-privileged roles.
+
+---
+
+### 4.3 Process: Application Services
+
+The **Application Services** orchestrate core operations such as authentication, order placement, stock deduction, payment initiation, and report generation.
+
+#### Tampering
+This process is highly exposed to business-logic abuse. An attacker may attempt to trigger invalid payment state transitions, manipulate report parameters, or exploit race conditions in stock allocation.
+
+#### Repudiation
+Without traceable service-level logging, users may deny having changed order state, initiated report generation, or performed administrative operations.
+
+#### Information Disclosure
+Improper DTO mapping or insecure service responses may expose internal fields such as identifiers, payment state, or business-sensitive report data.
+
+#### Denial of Service
+Expensive operations such as report generation, payment orchestration, or repeated stock checks can be abused to consume application resources.
+
+#### Elevation of Privilege
+Broken authorization enforcement inside services is particularly dangerous because it may bypass controller-level assumptions and expose privileged business actions.
+
+---
+
+### 4.4 Data Store: Relational Database
+
+The **Relational Database** stores users, sessions, teas, stock, orders, payments, and sales-report-related data.
+
+#### Tampering
+Improper query construction may allow malicious input to alter or corrupt persistent data, especially through injection-style attacks.
+
+#### Repudiation
+If persistent changes are not adequately logged, it may be difficult to determine which authenticated actor triggered a given change.
+
+#### Information Disclosure
+Sensitive data stored in the database, including account details and transaction information, may be exposed if access control or query restrictions are insufficient.
+
+#### Denial of Service
+A large number of expensive queries or repeated transactional conflicts may reduce database responsiveness and degrade the full application.
+
+This DFD element is particularly relevant to:
+- user lookup during authentication;
+- stock updates during order placement;
+- payment persistence;
+- report generation queries.
+
+---
+
+### 4.5 Process / External Interaction: Payment API Client and External Payment Provider
+
+The payment flow crosses a trust boundary between the internal backend and an external service.
+
+#### Spoofing
+An attacker may attempt to impersonate payment responses or abuse weak trust assumptions between the backend and the external payment provider.
+
+#### Tampering
+Payment requests or returned payment status may be manipulated if integrity checks and trusted workflow validation are insufficient.
+
+#### Repudiation
+Users may deny payment initiation or dispute state changes unless payment events are logged with timestamps and references.
+
+#### Information Disclosure
+Payment-related metadata may be leaked if error responses or logs expose provider-specific details or transaction references unnecessarily.
+
+#### Denial of Service
+Repeated payment initiation attempts may overload the payment integration flow or consume external service quotas.
+
+This part of the DFD is directly linked to `FR-11` and should be explicitly referenced in the report when discussing payment integrity threats. 
+
+---
+
+### 4.6 Process / Data Store: OS File Adapter and File System Utilities
+
+The **OS File Adapter** and the underlying server file system are security-sensitive because they involve interaction with the operating system.
+
+#### Tampering
+A malicious actor may attempt to upload files disguised as tea images, manipulate filenames, or abuse delete operations.
+
+#### Information Disclosure
+Predictable file paths or weak access restrictions may expose stored image files or other filesystem content.
+
+#### Denial of Service
+Very large or repeated upload requests may consume disk space, bandwidth, or file-handling resources.
+
+#### Elevation of Privilege
+If file handling is insecure, attackers may attempt to escalate impact from application misuse to server compromise.
+
+This DFD element is directly linked to `FR-07`, which makes it one of the most important trust-boundary crossings in the system.
 
 ---
 
 ## 5. Threat Model Summary
-The STRIDE analysis shows that the highest-risk areas of the system are:
 
-- authentication and session handling;
-- role-based access control;
-- order and stock consistency;
-- payment processing integrity;
-- file upload and file system interaction;
-- sensitive data exposure through API responses and report exports.
+The DFD-oriented STRIDE analysis shows that the most critical threats are concentrated around the following data flows and trust boundaries:
 
-These threats are consistent with the architecture and requirements of the system, particularly because the platform combines authentication, financial operations, file handling, and privileged administrative actions in a REST-based backend.
+- **Client -> AIM Middleware / REST API Controllers**, due to spoofing, brute force, information disclosure, and denial of service;
+- **Application Services -> Database Repository -> Relational Database**, due to tampering, concurrency issues, and data integrity risks;
+- **Application Services -> OS File Adapter -> File System Utilities**, due to malicious upload and file handling abuse;
+- **Application Services -> Payment API Client -> External Payment Provider**, due to payment forgery and trust-boundary crossing risks;
+- privileged flows associated with `MANAGER` and `ADMIN` operations, due to elevation of privilege.
+
+This makes the threat model more explicitly tied to the system DFDs and architectural flows, improving traceability between system design and threat analysis.
 
 ---
 
 ## 6. Abuse Cases
 
-### 6.1 Abuse Case Approach
-Abuse cases were defined to complement the threat model by describing how malicious actors may intentionally misuse legitimate system functionality.
+### 6.1 Abuse Case Overview
 
-Each abuse case includes:
+The abuse cases were defined to complement the threat model by describing how malicious actors may misuse legitimate functionality represented in the system architecture and domain model.
 
-- the threat actor;
-- the targeted functionality;
-- the misuse scenario;
-- the expected impact;
-- the related threat category;
-- the mitigation direction.
+Unlike the STRIDE analysis, which is organised by threat category and DFD element, the abuse cases are organised around concrete attacker goals and misuse scenarios. This makes them useful both for documentation and for future security testing activities. 
+
+The following abuse cases were selected because they are directly linked to the most exposed trust boundaries and data flows of the system.
 
 ---
 
-### AC-01 – Brute-Force Login Attempt
+### AC-01 – Brute-Force Authentication Attack
+
 **Threat Actor:**  
 External attacker
 
-**Target Functionality:**  
-User authentication
+**Target DFD Elements:**  
+`Client -> AIM Middleware -> REST API Controllers -> IAM Aggregate / User lookup`
 
 **Related Requirements:**  
-FR-02, NFR-08
+FR-02, NFR-03, NFR-08
 
 **Abuse Scenario:**  
-The attacker repeatedly submits login attempts against valid or guessed email addresses in order to discover valid credentials.
+The attacker repeatedly submits authentication requests with guessed credentials in an attempt to discover valid accounts or gain unauthorized access.
 
 **Expected Impact:**  
-Account compromise, unauthorized access, and possible privilege escalation if privileged accounts are targeted.
+Account compromise, unauthorized access, and potential privilege escalation if administrative users are targeted.
 
-**Related Threat Category:**  
+**Related Threat Categories:**  
 Spoofing, Denial of Service
 
 **Mitigation Direction:**  
-Rate limiting, secure password storage, anomaly detection, and strong authentication controls.
+Rate limiting, secure password hashing, generic authentication errors, and robust token/session validation.
 
 ---
 
-### AC-02 – Direct Access to Admin or Manager Endpoints
-**Threat Actor:**  
-Authenticated customer with malicious intent
+### AC-02 – Direct Access to Restricted Endpoints
 
-**Target Functionality:**  
-Inventory management, order status updates, and sales report export
+**Threat Actor:**  
+Authenticated `CUSTOMER` with malicious intent
+
+**Target DFD Elements:**  
+`Client -> REST API Controllers -> Application Services` for restricted administrative functions
 
 **Related Requirements:**  
-FR-06, FR-10, FR-13
+FR-03, FR-06, FR-10, FR-13
 
 **Abuse Scenario:**  
-A regular customer sends crafted API requests directly to endpoints intended for `MANAGER` or `ADMIN`, attempting to bypass client-side restrictions.
+A normal customer bypasses client-side interface restrictions and sends direct API calls to endpoints intended only for `MANAGER` or `ADMIN`.
 
 **Expected Impact:**  
-Unauthorized modification of teas, order states, or access to sensitive business reports.
+Unauthorized inventory changes, order status updates, or access to sensitive sales report data.
 
-**Related Threat Category:**  
+**Related Threat Categories:**  
 Elevation of Privilege
 
 **Mitigation Direction:**  
-Strict server-side RBAC enforcement and authorization checks on every restricted operation.
+Strict server-side authorization checks in middleware and service layers.
 
 ---
 
-### AC-03 – Manipulation of Stock Through Concurrent Orders
-**Threat Actor:**  
-Malicious or opportunistic authenticated customer
+### AC-03 – Concurrent Order Abuse to Break Stock Consistency
 
-**Target Functionality:**  
-Order placement and stock allocation
+**Threat Actor:**  
+Authenticated customer
+
+**Target DFD Elements:**  
+`Client -> REST API Controllers -> Application Services -> Database Repository -> Relational Database`
 
 **Related Requirements:**  
 FR-08, FR-09, NFR-02, NFR-05
 
 **Abuse Scenario:**  
-The attacker sends multiple concurrent order requests for the same tea item when stock is low, attempting to force inconsistent stock updates.
+The attacker intentionally sends multiple concurrent order requests for the same tea item when stock is low in order to exploit race conditions.
 
 **Expected Impact:**  
-Negative stock values, overselling, and business logic inconsistency.
+Negative stock values, overselling, and inconsistent order state.
 
-**Related Threat Category:**  
+**Related Threat Categories:**  
 Tampering
 
 **Mitigation Direction:**  
-Transactional enforcement, locking mechanisms, and atomic stock validation and update operations.
+ACID transactions, locking strategies, and atomic stock update rules.
 
 ---
 
-### AC-04 – Malicious Image Upload
-**Threat Actor:**  
-Compromised or malicious `MANAGER`/`ADMIN`
+### AC-04 – Malicious File Upload via Tea Image Management
 
-**Target Functionality:**  
-Tea image management
+**Threat Actor:**  
+Malicious or compromised `MANAGER` / `ADMIN`
+
+**Target DFD Elements:**  
+`Client -> REST API Controllers -> Application Services -> OS File Adapter -> File System Utilities`
 
 **Related Requirements:**  
 FR-07
 
 **Abuse Scenario:**  
-A privileged user uploads a malicious file disguised as an image in an attempt to store executable or dangerous content on the server.
+A privileged user uploads a malicious file disguised as a tea image in order to store dangerous content on the server or abuse unsafe file handling logic.
 
 **Expected Impact:**  
-Server compromise, malicious file storage, or later exploitation through insecure file handling.
+Server compromise, malicious file persistence, or later exploitation of the operating system environment.
 
-**Related Threat Category:**  
+**Related Threat Categories:**  
 Tampering, Elevation of Privilege
 
 **Mitigation Direction:**  
-Strict file type validation, safe storage location, filename randomization, and permission hardening.
+Strict file validation, filename sanitization/randomization, secure storage location, and restrictive filesystem permissions.
 
 ---
 
 ### AC-05 – Payment State Forgery
+
 **Threat Actor:**  
 Authenticated customer or API attacker
 
-**Target Functionality:**  
-Payment processing
+**Target DFD Elements:**  
+`Client -> REST API Controllers -> Application Services -> Payment API Client -> External Payment Provider`
 
 **Related Requirements:**  
 FR-11, NFR-01, NFR-05
 
 **Abuse Scenario:**  
-The attacker tampers with the client request or API payload in an attempt to force the payment status to `COMPLETED` without a legitimate successful payment.
+The attacker tampers with the payment initiation or callback flow in an attempt to force an order into a paid state without a legitimate successful payment.
 
 **Expected Impact:**  
-Financial loss, fraudulent order confirmation, and compromised transaction integrity.
+Financial fraud, incorrect order confirmation, and loss of transaction integrity.
 
-**Related Threat Category:**  
-Tampering
+**Related Threat Categories:**  
+Tampering, Spoofing
 
 **Mitigation Direction:**  
-Server-side validation of payment state transitions, trusted payment workflow enforcement, and audit logging.
+Trusted payment workflow validation, strict state transition rules, backend verification, and audit logging.
 
 ---
 
 ### AC-06 – Sensitive Data Enumeration Through API Errors
+
 **Threat Actor:**  
 External attacker
 
-**Target Functionality:**  
-Authentication, registration, order access, and general API interaction
+**Target DFD Elements:**  
+`Client -> AIM Middleware / REST API Controllers`
 
 **Related Requirements:**  
 NFR-03, NFR-04
 
 **Abuse Scenario:**  
-The attacker intentionally sends malformed or unauthorized requests to observe differences in API responses, error messages, or timing behaviour.
+The attacker sends malformed, unauthorized, or repeated requests and compares API responses in order to infer valid accounts, internal structure, or protected business information.
 
 **Expected Impact:**  
-Disclosure of valid accounts, internal identifiers, application structure, or sensitive implementation details.
+Disclosure of valid users, identifiers, implementation details, or security-relevant patterns.
 
-**Related Threat Category:**  
+**Related Threat Categories:**  
 Information Disclosure
 
 **Mitigation Direction:**  
-Standardized generic error handling, controlled response content, and consistent validation behaviour.
+Generic error handling, response normalization, and consistent validation behaviour.
 
 ---
 
 ### AC-07 – Sales Report Abuse
-**Threat Actor:**  
-Unauthorized or low-privilege authenticated user
 
-**Target Functionality:**  
-Sales report export
+**Threat Actor:**  
+Low-privilege authenticated user
+
+**Target DFD Elements:**  
+`Client -> REST API Controllers -> Application Services -> Database Repository`
 
 **Related Requirements:**  
 FR-13
 
 **Abuse Scenario:**  
-An attacker attempts to access or generate sales reports containing business-sensitive data by manipulating API requests or report parameters.
+The attacker attempts to generate or access sales reports without proper authorization, or manipulates parameters to retrieve sensitive business information.
 
 **Expected Impact:**  
-Disclosure of commercially sensitive information, customer activity patterns, and business metrics.
+Disclosure of commercially sensitive data, business metrics, and customer activity patterns.
 
-**Related Threat Category:**  
+**Related Threat Categories:**  
 Information Disclosure, Elevation of Privilege
 
 **Mitigation Direction:**  
-Authorization checks, strict validation of report generation permissions, and access-controlled export mechanisms.
+Strict authorization checks and controlled report generation/export rules.
 
 ---
 
 ### AC-08 – API Flooding
-**Threat Actor:**  
-External attacker or bot
 
-**Target Functionality:**  
-Login, registration, catalog browsing, order placement, and upload endpoints
+**Threat Actor:**  
+External attacker or automated bot
+
+**Target DFD Elements:**  
+`Client -> AIM Middleware / REST API Controllers -> Application Services`
 
 **Related Requirements:**  
 NFR-06, NFR-07, NFR-08
 
 **Abuse Scenario:**  
-The attacker sends a large volume of requests in order to exhaust API, database, or file-handling resources.
+The attacker sends a large number of requests to authentication, catalog, order, upload, or report-related endpoints in order to exhaust system resources.
 
 **Expected Impact:**  
-Service degradation, request failures, increased latency, and possible denial of service.
+Degraded performance, request failures, increased latency, and partial or complete denial of service.
 
-**Related Threat Category:**  
+**Related Threat Categories:**  
 Denial of Service
 
 **Mitigation Direction:**  
-Rate limiting, throttling, timeout controls, and operational monitoring.
+Rate limiting, throttling, timeouts, monitoring, and defensive resource controls.
 
 ---
 
+## 6.2 Abuse Case UML Diagrams
 
-## 7. Traceability Between Threats and Abuse Cases
-The abuse cases are directly derived from the identified STRIDE threats and from the most security-sensitive requirements of the system.
+To improve the readability of the abuse case analysis, selected abuse cases should also be represented with UML abuse case diagrams. These diagrams make explicit the relationship between normal use cases, malicious use cases, threat actors, and mitigation-oriented behaviours.
 
-In particular:
+The most relevant abuse cases to represent visually are:
 
-- authentication abuse cases support spoofing analysis;
-- role bypass abuse cases support elevation of privilege analysis;
-- stock and payment manipulation abuse cases support tampering analysis;
-- report and error-based enumeration abuse cases support information disclosure analysis;
-- flooding abuse cases support denial of service analysis.
+- AC-01 – Brute-Force Authentication Attack
+- AC-02 – Direct Access to Restricted Endpoints
+- AC-04 – Malicious File Upload
+- AC-05 – Payment State Forgery
 
-This traceability strengthens the consistency of the Phase 1 deliverable and supports later security testing activities.
