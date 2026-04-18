@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Manager / Admin" as PrivUser
+actor "Malicious Privileged User" as Attacker
+
+rectangle "Online Tea Store Backend" {
+  usecase "Upload tea image" as UC1
+  usecase "Store file through\nOS File Adapter" as UC2
+  usecase "Validate MIME type\nand extension" as UC3
+  usecase "Rename uploaded file" as UC4
+  usecase "Store outside public\nweb root" as UC5
+
+  usecase "Upload malicious file\ndisguised as image" as AB1
+  usecase "Abuse unsafe file\nhandling" as AB2
+}
+
+PrivUser --> UC1
+UC1 .> UC2 : <<includes>>
+
+Attacker --> AB1
+AB1 .> AB2 : <<includes>>
+
+AB1 ..> UC1 : <<threatens>>
+AB1 ..> UC2 : <<threatens>>
+
+UC3 ..> AB1 : <<mitigates>>
+UC4 ..> AB1 : <<mitigates>>
+UC5 ..> AB2 : <<mitigates>>
+@enduml
