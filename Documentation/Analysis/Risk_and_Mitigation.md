@@ -68,7 +68,7 @@ Improper authentication mechanisms or weak token validation may allow unauthoriz
 Gain unauthorized access to the system and escalate privileges to perform administrative actions.
 
 **Threat Impact:**  
-Attackers may access sensitive data and perform unauthorized operations, compromising both confidentiality and integrity of the system.
+Unauthorized access may lead to data breaches, reputational damage, and loss of customer trust. It may also allow manipulation of system operations by non-authorized users.
 
 
 **Likelihood:** High (3)  
@@ -92,7 +92,7 @@ Improper validation or sanitization of user input in API requests may allow atta
 Access, modify, or extract sensitive data from the database (users, orders, payments).
 
 **Threat Impact:**  
-This may result in unauthorized access, modification, or deletion of data in users, orders, and payments.
+A successful attack may result in exposure of customer data, legal consequences (e.g., GDPR violations), financial penalties, and loss of business credibility.
 
 **Likelihood:** High (3)  
 **Impact:** High (3)  
@@ -115,7 +115,7 @@ Simultaneous purchase requests for the same product may lead to inconsistent sto
 Exploit race conditions to purchase more items than available or manipulate stock behavior.
 
 **Threat Impact:**  
-This may result in negative stock levels, overselling, and data inconsistency.
+Incorrect stock management may lead to overselling, order cancellations, customer dissatisfaction, and operational inefficiencies.
 
 **Likelihood:** Medium (2)  
 **Impact:** High (3)  
@@ -138,7 +138,7 @@ Unrestricted file upload functionality may allow attackers to upload malicious o
 Gain remote access to the server or execute malicious code.
 
 **Threat Impact:**  
-This may lead to server compromise, execution of malicious code, or data breaches.
+Server compromise may result in full system downtime, data breaches, and significant recovery costs, impacting business continuity.
 
 **Likelihood:** High (3)  
 **Impact:** High (3)  
@@ -161,7 +161,7 @@ An attacker may attempt to manipulate the payment status, for example by forcing
 Obtain products or services without completing a legitimate payment.
 
 **Threat Impact:**  
-This may lead to financial fraud, incorrect order processing, and revenue loss.
+Fraudulent transactions may lead to direct financial loss, accounting inconsistencies, and loss of trust from customers and partners.
 
 **Likelihood:** Medium (2)  
 **Impact:** High (3)  
@@ -184,7 +184,7 @@ Improper handling of API responses may expose sensitive information such as pass
 Collect sensitive information to perform further attacks (e.g., credential reuse, privilege escalation).
 
 **Threat Impact:**  
-This may result in credential compromise and violation of data confidentiality.
+Leakage of sensitive data may result in regulatory non-compliance (e.g., GDPR), reputational damage, and potential legal actions.
 
 **Likelihood:** Medium (2)  
 **Impact:** High (3)  
@@ -207,114 +207,7 @@ Excessive or malicious requests may overload the system, leading to reduced perf
 Disrupt system availability and degrade service for legitimate users.
 
 **Threat Impact:**  
-This affects system availability and user experience.
+Service unavailability may result in lost sales, degraded customer experience, and damage to the company’s reputation.
 
-**Likelihood:** Medium (2)  
-**Impact:** Medium (2)  
-**Risk Level:** Medium (4)
 
----
 
-## 1.4 Mitigation Strategies
-
-### R1 Authentication Bypass
-
-**Mitigation Measures:**
-
-- Use secure password hashing (`bcrypt`)
-- Implement JWT authentication with expiration time
-- Enforce Role-Based Access Control (RBAC) in the Application Layer
-- Apply rate limiting on login endpoints (NFR08)
-- Use generic error messages to avoid information leakage (NFR-03)
-
-**Justification:**  
-These measures ensure that authentication is secure and prevent unauthorized access to privileged roles.
-
----
-
-### R2 SQL Injection
-
-**Mitigation Measures:**
-
-- Use prepared statements or ORM (e.g., JPA/Hibernate)
-- Validate and sanitize all user inputs at the Application Layer
-- Avoid dynamic query construction
-- Apply the principle of least privilege in database access
-- Monitor and log suspicious database queries
-
-**Justification:**  
-These controls prevent malicious input from being interpreted as executable SQL, protecting data integrity and confidentiality.
-
----
-
-### R3 Concurrency Issues (Race Condition in Stock Allocation)
-
-**Mitigation Measures:**
-
-- Use ACID-compliant database transactions (NFR05)
-- Implement locking mechanisms (optimistic or pessimistic locking)
-- Validate stock availability before confirming orders
-- Ensure atomic updates to stock levels
-
-**Justification:**  
-These strategies guarantee consistency of stock data and prevent overselling due to concurrent operations.
-
----
-
-### R4 Malicious File Upload
-
-**Mitigation Measures:**
-
-- Validate file type using MIME type and extension
-- Restrict allowed file formats (e.g., only images)
-- Limit file size
-- Rename uploaded files to avoid path manipulation
-- Store files outside the public web directory
-- Apply strict file system permissions
-
-**Justification:**  
-These controls prevent execution of malicious files and protect the server from compromise.
-
----
-
-### R5 Payment Status Manipulation
-
-**Mitigation Measures:**
-
-- Ensure payment status is controlled exclusively by backend logic
-- Validate all payment state transitions
-- Implement idempotent operations in payment processing
-- Maintain audit logs of all payment actions
-
-**Justification:**  
-These mechanisms prevent unauthorized manipulation of financial transactions and ensure traceability.
-
----
-
-### R6 Exposure of Sensitive Data
-
-**Mitigation Measures:**
-
-- Use DTOs to control API responses
-- Exclude sensitive fields such as `passwordHash`
-- Standardize secure error responses (NFR-03)
-- Avoid logging sensitive information
-
-**Justification:**  
-These measures protect user data confidentiality and prevent information leakage.
-
----
-
-### R7 Denial of Service (DoS)
-
-**Mitigation Measures:**
-
-- Implement rate limiting (NFR-08)
-- Configure request timeouts
-- Limit payload sizes
-- Monitor traffic and generate alerts for abnormal activity
-
-**Justification:**  
-These controls reduce the impact of excessive requests and maintain system availability.
-
----
