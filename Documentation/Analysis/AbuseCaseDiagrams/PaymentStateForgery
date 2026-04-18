@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Customer
+actor "API Attacker" as Attacker
+actor "External Payment Provider" as PSP
+
+rectangle "Online Tea Store Backend" {
+  usecase "Initiate payment" as UC1
+  usecase "Validate payment\nresponse" as UC2
+  usecase "Update payment status" as UC3
+  usecase "Audit payment event" as UC4
+
+  usecase "Forge payment state" as AB1
+  usecase "Manipulate payment\ncallback/response" as AB2
+}
+
+Customer --> UC1
+PSP --> UC2
+UC2 .> UC3 : <<includes>>
+
+Attacker --> AB1
+AB1 .> AB2 : <<includes>>
+
+AB1 ..> UC2 : <<threatens>>
+AB1 ..> UC3 : <<threatens>>
+
+UC2 ..> AB1 : <<mitigates>>
+UC4 ..> AB1 : <<mitigates>>
+@enduml
