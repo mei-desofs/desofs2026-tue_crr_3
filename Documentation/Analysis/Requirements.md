@@ -17,8 +17,8 @@
 * **FR-08 (Place Order):** The system must allow authenticated `CUSTOMER` to place an order containing specific quantities of Teas.
 * **FR-09 (Stock Allocation):** The system must automatically deduct the purchased quantities from the Tea's `StockLevel` when an order is successfully placed.
 * **FR-10 (Order Status):** The system must allow `MANAGER's` to update the  status of an order (e.g., from `PENDING` to `SHIPPED`).
-* **FR-11 (Payment Processing):** The system must allow users to proceed with payment and update the payment status (e.g., `COMPLETED` or `FAILED`).
-* **FR-13 (Sales Report Export ):** The system must allow ADMINs to input a custom "Report Name" and a date range to request a sales report. 
+* **FR-11 (Payment Processing):** The system must allow `CUSTOMERS` to proceed with payment and update the payment status (e.g., `COMPLETED` or `FAILED`).
+* **FR-13 (Sales Report Export ):** The system must allow `ADMINS`  to input a custom "Report Name" and a date range to request a sales report. 
 
 ## 2. Non-Functional Requirements (FURPS+ Model)
 
