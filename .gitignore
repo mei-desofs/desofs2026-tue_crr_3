@@ -1,2 +1,27 @@
 /.vs
 /Documentation/.idea
+
+# Build output
+bin/
+obj/
+out/
+
+# .NET
+*.user
+*.suo
+.vs/
+.idea/
+*.DotSettings
+
+# Environment
+.env
+.env.*
+appsettings.Development.json
+appsettings.Production.json
+**/secrets.json
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+TestResults/

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeaShop.Data;
-using TeaShop.Domains;
+using TeaShop.Domains.Users;
 using TeaShop.Repositories.Interfaces;
 
 namespace TeaShop.Repositories

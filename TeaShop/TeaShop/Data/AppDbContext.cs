@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using TeaShop.Domains;
+using TeaShop.Domains.Users;
 
 namespace TeaShop.Data
 {

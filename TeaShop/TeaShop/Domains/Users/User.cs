@@ -1,4 +1,4 @@
-﻿namespace TeaShop.Domains
+﻿namespace TeaShop.Domains.Users
 {
     public class User(Guid externalId, string firstName, string lastName, string email, string? phoneNumber, string? address, string? createdBy, DateTime? createdAt, string? updatedBy, DateTime? updatedAt, bool active)
     {

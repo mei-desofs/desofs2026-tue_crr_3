@@ -1,3 +1,4 @@
+using TeaShop.Domains.Users;
 using TeaShop.Enums;
 
 namespace TeaShop.Domains
