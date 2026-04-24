@@ -2,7 +2,7 @@
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Users;
 
-namespace TeaShop.Tests.Unit.Domain;
+namespace TeaShop.Test.Unit.Domain.Users;
 
 public class EmailTests
 {
