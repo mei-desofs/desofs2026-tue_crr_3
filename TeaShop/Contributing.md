@@ -6,7 +6,13 @@
 
 ## Commit messages
 Use the format: `type(scope): description`
-Types: feat, fix, test, ci, docs, chore, refactor
+types:
+- `feat`: A new feature
+- `fix`: A bug fix
+- `test`: Adding or updating tests
+- `ci`: Changes to GitHub Actions/Workflow
+- `docs`: Documentation changes
+- `refactor`: Code changes that neither fix a bug nor add a feature
 
 ## Pull requests
 - At least 1 team member must review before merge
