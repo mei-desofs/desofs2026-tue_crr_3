@@ -26,14 +26,14 @@ namespace TeaShop.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Domains.Payment payment)
+        public async Task<IActionResult> Create([FromBody] Domain.Payment payment)
         {
             await _paymentRepository.Add(payment);
             return CreatedAtAction(nameof(GetByExternalId), new { externalId = payment.ExternalId }, payment);
         }
 
         [HttpPut("{externalId:guid}")]
-        public async Task<IActionResult> Update(Guid externalId, [FromBody] Domains.Payment payment)
+        public async Task<IActionResult> Update(Guid externalId, [FromBody] Domain.Payment payment)
         {
             var existing = await _paymentRepository.GetByExternalId(externalId);
             if (existing is null) return NotFound();

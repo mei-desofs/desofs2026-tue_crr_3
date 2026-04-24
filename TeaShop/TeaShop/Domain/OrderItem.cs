@@ -1,4 +1,4 @@
-namespace TeaShop.Domains
+namespace TeaShop.Domain
 {
     public class OrderItem(Guid externalId, int orderId, int productId, int quantity, decimal unitPrice, string? createdBy, DateTime? createdAt, string? updatedBy, DateTime? updatedAt)
     {

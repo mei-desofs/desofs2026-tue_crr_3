@@ -1,4 +1,4 @@
-using TeaShop.Domains;
+using TeaShop.Domain;
 
 namespace TeaShop.Repositories.Interfaces
 {

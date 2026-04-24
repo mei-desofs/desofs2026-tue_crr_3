@@ -1,7 +1,7 @@
-using TeaShop.Domains.Users;
+using TeaShop.Domain.Users;
 using TeaShop.Enums;
 
-namespace TeaShop.Domains
+namespace TeaShop.Domain
 {
     public class Order(Guid externalId, int userId, OrderStatus status, decimal totalAmount, string? shippingAddress, string? createdBy, DateTime? createdAt, string? updatedBy, DateTime? updatedAt)
     {

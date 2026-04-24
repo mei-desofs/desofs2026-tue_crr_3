@@ -29,7 +29,7 @@ public class EmailTests
 
     [Theory]
     [InlineData("notanemail")]
-    [InlineData("@nodomain")]
+    [InlineData("@noDomain")]
     [InlineData("noatsign")]
     [InlineData("missing@")]
     public void Create_MissingAtSign_ShouldThrowDomainException(string raw)

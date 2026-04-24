@@ -25,14 +25,14 @@ namespace TeaShop.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Domains.Category category)
+        public async Task<IActionResult> Create([FromBody] Domain.Category category)
         {
             await _categoryRepository.Add(category);
             return CreatedAtAction(nameof(GetByExternalId), new { externalId = category.ExternalId }, category);
         }
 
         [HttpPut("{externalId:guid}")]
-        public async Task<IActionResult> Update(Guid externalId, [FromBody] Domains.Category category)
+        public async Task<IActionResult> Update(Guid externalId, [FromBody] Domain.Category category)
         {
             var existing = await _categoryRepository.GetByExternalId(externalId);
             if (existing is null) return NotFound();

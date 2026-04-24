@@ -32,14 +32,14 @@ namespace TeaShop.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Domains.Product product)
+        public async Task<IActionResult> Create([FromBody] Domain.Product product)
         {
             await _productRepository.Add(product);
             return CreatedAtAction(nameof(GetByExternalId), new { externalId = product.ExternalId }, product);
         }
 
         [HttpPut("{externalId:guid}")]
-        public async Task<IActionResult> Update(Guid externalId, [FromBody] Domains.Product product)
+        public async Task<IActionResult> Update(Guid externalId, [FromBody] Domain.Product product)
         {
             var existing = await _productRepository.GetByExternalId(externalId);
             if (existing is null) return NotFound();

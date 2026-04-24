@@ -1,4 +1,4 @@
-namespace TeaShop.Domains
+namespace TeaShop.Domain
 {
     public class Category(Guid externalId, string name, string? description, string? createdBy, DateTime? createdAt, string? updatedBy, DateTime? updatedAt, bool active)
     {

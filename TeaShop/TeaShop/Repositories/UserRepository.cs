@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeaShop.Data;
-using TeaShop.Domains.Users;
+using TeaShop.Domain.Users;
 using TeaShop.Repositories.Interfaces;
 
 namespace TeaShop.Repositories
@@ -11,7 +11,7 @@ namespace TeaShop.Repositories
 
         public async Task<IEnumerable<User>> GetAllActive()
         {
-            return await _dbContext.Users.Where(e => e.Active).ToListAsync();
+            return await _dbContext.Users.ToListAsync();
         }
     }
 }

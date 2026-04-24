@@ -1,4 +1,4 @@
-﻿using TeaShop.Domains.Users;
+﻿using TeaShop.Domain.Users;
 
 namespace TeaShop.Repositories.Interfaces
 {

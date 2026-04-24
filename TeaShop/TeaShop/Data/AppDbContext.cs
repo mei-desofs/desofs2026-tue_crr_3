@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using TeaShop.Domains;
-using TeaShop.Domains.Users;
+using TeaShop.Domain;
+using TeaShop.Domain.Users; 
 
 namespace TeaShop.Data
 {
@@ -27,8 +27,7 @@ namespace TeaShop.Data
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.Property(u => u.Active)
-                    .HasDefaultValue(true);
+             
 
                 entity.HasMany<Order>()
                     .WithOne(o => o.User)

@@ -25,7 +25,7 @@ namespace TeaShop.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TeaShop.Domains.User", b =>
+            modelBuilder.Entity("TeaShop.Domain.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

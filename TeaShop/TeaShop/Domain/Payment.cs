@@ -1,6 +1,6 @@
 using TeaShop.Enums;
 
-namespace TeaShop.Domains
+namespace TeaShop.Domain
 {
     public class Payment(Guid externalId, int orderId, decimal amount, PaymentMethod method, PaymentStatus status, string? transactionId, string? createdBy, DateTime? createdAt, string? updatedBy, DateTime? updatedAt)
     {

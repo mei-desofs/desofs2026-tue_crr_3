@@ -1,4 +1,4 @@
-namespace TeaShop.Domains
+namespace TeaShop.Domain
 {
     public class Stock(Guid externalId, int productId, int quantity, string? createdBy, DateTime? createdAt, string? updatedBy, DateTime? updatedAt)
     {
