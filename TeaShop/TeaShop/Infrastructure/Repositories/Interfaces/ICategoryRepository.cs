@@ -1,6 +1,6 @@
 using TeaShop.Domain;
 
-namespace TeaShop.Repositories.Interfaces
+namespace TeaShop.Infrastructure.Repositories.Interfaces
 {
     public interface ICategoryRepository
     {

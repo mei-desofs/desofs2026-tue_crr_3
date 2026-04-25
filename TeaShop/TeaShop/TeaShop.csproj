@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Configurations\" />
     <Folder Include="Domain\IAM\" />
     <Folder Include="DTOs\" />
     <Folder Include="Enums\" />

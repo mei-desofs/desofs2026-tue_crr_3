@@ -2,13 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using TeaShop.Data;
 using TeaShop.Domain;
 using TeaShop.Enums;
-using TeaShop.Repositories.Interfaces;
+using TeaShop.Infrastructure.Repositories.Interfaces;
 
-namespace TeaShop.Repositories
+namespace TeaShop.Infrastructure.Repositories
 {
-    public class OrderRepository(AppDbContext dbContext) : IOrderRepository
+    public class OrderRepository(TeaShopDBContext dbContext) : IOrderRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
+        private readonly TeaShopDBContext _dbContext = dbContext;
 
         public async Task<IEnumerable<Order>> GetByUserId(int userId)
         {

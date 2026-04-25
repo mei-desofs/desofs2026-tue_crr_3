@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TeaShop.Enums;
-using TeaShop.Repositories.Interfaces;
+using TeaShop.Infrastructure.Repositories.Interfaces;
 
 namespace TeaShop.Controllers
 {

@@ -11,7 +11,7 @@ using TeaShop.Data;
 
 namespace TeaShop.Data.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(TeaShopDBContext))]
     [Migration("20260322185011_InitialCreate")]
     partial class InitialCreate
     {

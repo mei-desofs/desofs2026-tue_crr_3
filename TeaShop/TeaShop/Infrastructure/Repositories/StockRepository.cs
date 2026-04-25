@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using TeaShop.Data;
 using TeaShop.Domain;
-using TeaShop.Repositories.Interfaces;
+using TeaShop.Infrastructure.Repositories.Interfaces;
 
-namespace TeaShop.Repositories
+namespace TeaShop.Infrastructure.Repositories
 {
-    public class StockRepository(AppDbContext dbContext) : IStockRepository
+    public class StockRepository(TeaShopDBContext dbContext) : IStockRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
+        private readonly TeaShopDBContext _dbContext = dbContext;
 
         public async Task<Stock?> GetByProductId(int productId)
         {

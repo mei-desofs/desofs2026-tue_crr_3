@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using TeaShop.Data;
 using TeaShop.Domain;
-using TeaShop.Repositories.Interfaces;
+using TeaShop.Infrastructure.Repositories.Interfaces;
 
-namespace TeaShop.Repositories
+namespace TeaShop.Infrastructure.Repositories
 {
-    public class PaymentRepository(AppDbContext dbContext) : IPaymentRepository
+    public class PaymentRepository(TeaShopDBContext dbContext) : IPaymentRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
+        private readonly TeaShopDBContext _dbContext = dbContext;
 
         public async Task<Payment?> GetByOrderId(int orderId)
         {

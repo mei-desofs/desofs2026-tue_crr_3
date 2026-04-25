@@ -1,7 +1,7 @@
 using TeaShop.Domain;
 using TeaShop.Enums;
 
-namespace TeaShop.Repositories.Interfaces
+namespace TeaShop.Infrastructure.Repositories.Interfaces
 {
     public interface IOrderRepository
     {

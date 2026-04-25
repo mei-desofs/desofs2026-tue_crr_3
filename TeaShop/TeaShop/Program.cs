@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TeaShop.Data;
-using TeaShop.Repositories;
-using TeaShop.Repositories.Interfaces;
+using TeaShop.Infrastructure.Repositories;
+using TeaShop.Infrastructure.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<TeaShopDBContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.MigrationsAssembly("TeaShop").MigrationsHistoryTable("__EFMigrationsHistory", "dbo")));

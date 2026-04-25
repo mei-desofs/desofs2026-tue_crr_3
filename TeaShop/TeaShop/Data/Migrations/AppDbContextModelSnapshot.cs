@@ -10,7 +10,7 @@ using TeaShop.Data;
 
 namespace TeaShop.Data.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(TeaShopDBContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
