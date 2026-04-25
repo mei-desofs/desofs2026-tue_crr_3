@@ -1,6 +1,6 @@
 using TeaShop.Domain.IAM;
 
-namespace TeaShop.Infrastructure.Repositories.Interfaces;
+namespace TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 
 public interface ISessionRepository
 {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TeaShop.Data;
 using TeaShop.Domain.Users;
-using TeaShop.Infrastructure.Repositories.Interfaces;
+using TeaShop.Infrastructure.Data;
+using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 
-namespace TeaShop.Infrastructure.Repositories;
+namespace TeaShop.Infrastructure.Persistence.Repositories;
 
 public sealed class UserRepository : IUserRepository
 {

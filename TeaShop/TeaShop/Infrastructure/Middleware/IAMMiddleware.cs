@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using TeaShop.Domain.IAM;
-using TeaShop.Infrastructure.Repositories.Interfaces;
+using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 
 namespace TeaShop.Infrastructure.Middleware;
 

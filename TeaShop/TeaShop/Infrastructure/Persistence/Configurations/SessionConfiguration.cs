@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TeaShop.Domain.IAM;
 
-namespace TeaShop.Data.Configurations;
+namespace TeaShop.Infrastructure.Data.Configurations;
 
 public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 {

@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TeaShop.Data;
+using TeaShop.Infrastructure.Data;
 
 #nullable disable
 
 namespace TeaShop.Data.Migrations
 {
     [DbContext(typeof(TeaShopDbContext))]
-    [Migration("20260322185914_Refactor_UserTbl")]
-    partial class Refactor_UserTbl
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

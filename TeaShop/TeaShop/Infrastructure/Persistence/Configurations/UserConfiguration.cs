@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TeaShop.Domain.Users;
 
-namespace TeaShop.Data.Configurations;
+namespace TeaShop.Infrastructure.Data.Configurations;
 
 public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 {

@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TeaShop.Data;
+using TeaShop.Infrastructure.Data;
 
 #nullable disable
 
 namespace TeaShop.Data.Migrations
 {
     [DbContext(typeof(TeaShopDbContext))]
-    [Migration("20260322185011_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260322185914_Refactor_UserTbl")]
+    partial class Refactor_UserTbl
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,7 +34,9 @@ namespace TeaShop.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Active")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
@@ -52,7 +54,7 @@ namespace TeaShop.Data.Migrations
                     b.Property<Guid>("ExternalId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("FirtName")
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -72,6 +74,19 @@ namespace TeaShop.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            Active = true,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "seed",
+                            Email = "admin@teashop.com",
+                            ExternalId = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+                            FirstName = "App",
+                            LastName = "Admin"
+                        });
                 });
 #pragma warning restore 612, 618
         }

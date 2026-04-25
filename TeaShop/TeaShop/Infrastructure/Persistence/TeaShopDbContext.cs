@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TeaShop.Domain.IAM;
 using TeaShop.Domain.Users;
 
-namespace TeaShop.Data;
+namespace TeaShop.Infrastructure.Data;
 
 public sealed class TeaShopDbContext : DbContext
 {
