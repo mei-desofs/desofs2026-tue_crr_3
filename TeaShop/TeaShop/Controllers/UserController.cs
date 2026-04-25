@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TeaShop.Repositories.Interfaces;
+using TeaShop.Infrastructure.Repositories.Interfaces;
 
 namespace TeaShop.Controllers
 {
@@ -10,11 +10,6 @@ namespace TeaShop.Controllers
     {
         private readonly IUserRepository _userRepository = userRepository;
 
-        [HttpGet("active")]
-        public async Task<IActionResult> GetAllActive()
-        {
-            var users = await _userRepository.GetAllActive();
-            return Ok(users);
-        }
+       
     }
 }

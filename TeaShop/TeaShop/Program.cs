@@ -12,21 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 
-builder.Services.AddDbContext<TeaShopDBContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.MigrationsAssembly("TeaShop").MigrationsHistoryTable("__EFMigrationsHistory", "dbo")));
 
-
-
-//dependencias
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<IStockRepository, StockRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 var app = builder.Build();
 
