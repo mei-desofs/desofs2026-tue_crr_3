@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.Json;
 using TeaShop.Domain.Exceptions;
 
@@ -29,8 +30,10 @@ public sealed class GenericExceptionMiddleware
 
     private async Task HandleAsync(HttpContext ctx, Exception ex)
     {
+        var sanitizedPath = SanitizeForLog(ctx.Request.Path.ToString());
+
         _logger.LogError(ex, "Unhandled exception on {Method} {Path}",
-            ctx.Request.Method, ctx.Request.Path);
+            ctx.Request.Method, sanitizedPath);
 
         var (statusCode, message) = ex switch
         {
@@ -49,5 +52,15 @@ public sealed class GenericExceptionMiddleware
 
         var body = JsonSerializer.Serialize(new { error = message });
         await ctx.Response.WriteAsync(body);
+    }
+
+    private static string SanitizeForLog(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return string.Empty;
+        }
+
+        return new string(input.Where(c => !char.IsControl(c)).ToArray());
     }
 }
