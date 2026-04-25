@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TeaShop.Data;
+using TeaShop.Infrastructure;
 using TeaShop.Infrastructure.Repositories;
 using TeaShop.Infrastructure.Repositories.Interfaces;
 
@@ -10,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 
 
@@ -25,6 +27,8 @@ if (app.Environment.IsDevelopment())
         options.SwaggerEndpoint("/openapi/v1.json", "api");
     });
 }
+
+app.UseInfrastructureMiddleware();
 
 app.UseHttpsRedirection();
 

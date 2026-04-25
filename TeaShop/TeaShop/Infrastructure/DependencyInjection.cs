@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TeaShop.Data;
+using TeaShop.Infrastructure.Middleware;
 using TeaShop.Infrastructure.Repositories;
 using TeaShop.Infrastructure.Repositories.Interfaces;
 using TeaShop.Infrastructure.Security;
@@ -20,5 +21,13 @@ public static class DependencyInjection
         services.AddSingleton<PasswordHashingService>();
 
         return services;
+    }
+    public static WebApplication UseInfrastructureMiddleware(this WebApplication app)
+    {
+        app.UseMiddleware<GenericExceptionMiddleware>();
+
+        app.UseMiddleware<IAMMiddleware>();
+
+        return app;
     }
 }
