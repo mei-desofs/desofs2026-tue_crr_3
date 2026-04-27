@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using TeaShop.Application.Auth;
 using TeaShop.Infrastructure.Data;
 using TeaShop.Infrastructure.Middleware;
 using TeaShop.Infrastructure.Persistence.Repositories;
@@ -14,8 +13,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration config)
     {
-        services.AddDbContext<TeaShopDbContext>(opts =>
-            opts.UseSqlServer(config.GetConnectionString("TestContext.Current.CancellationTokenConnection")));
+        services.AddDbContext<TeaShopDbContext>(opts => opts.UseNpgsql(config.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
