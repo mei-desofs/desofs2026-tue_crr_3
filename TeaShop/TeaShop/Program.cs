@@ -70,7 +70,7 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<TeaShopDbContext>();
+    scope.ServiceProvider.GetRequiredService<TeaShopDbContext>();
 
     var seeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
     await seeder.SeedAsync(CancellationToken.None);
