@@ -1,50 +1,79 @@
-using Microsoft.EntityFrameworkCore;
-using TeaShop.Data;
-using TeaShop.Repositories;
-using TeaShop.Repositories.Interfaces;
+
+using TeaShop.Application;
+using TeaShop.Infrastructure;
+using TeaShop.Infrastructure.Data;
+using TeaShop.Infrastructure.Persistence.Seed;
+using TeaShop.Infrastructure.RateLimiting;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.MigrationsAssembly("TeaShop").MigrationsHistoryTable("__EFMigrationsHistory", "dbo")));
+builder.Services.AddTeaShopRateLimiting();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "Bearer";
+    options.DefaultChallengeScheme = "Bearer";
+}).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+});
 
+builder.Services.AddAuthorization(opts =>
+{
+    opts.AddPolicy("CustomerOrAbove", p =>
+        p.RequireAuthenticatedUser()
+         .RequireRole("CUSTOMER", "MANAGER", "ADMIN"));
 
+    opts.AddPolicy("ManagerOrAbove", p =>
+        p.RequireAuthenticatedUser()
+         .RequireRole("MANAGER", "ADMIN"));
 
-//dependencias
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<IStockRepository, StockRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+    opts.AddPolicy("AdminOnly", p =>
+        p.RequireAuthenticatedUser()
+         .RequireRole("ADMIN"));
+});
+builder.Services.AddScoped<AdminSeeder>();
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "api");
+        options.SwaggerEndpoint("/openapi/v1.json", "Tea Shop API v1");
     });
+}
+else
+{
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 
+app.UseRateLimiter();
+
+app.UseInfrastructureMiddleware();
+
+app.UseAuthorization();
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<TeaShopDbContext>();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
+    await seeder.SeedAsync(CancellationToken.None);
+}
 
 app.Run();
