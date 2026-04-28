@@ -42,9 +42,13 @@ public sealed class UserService
         await _users.AddAsync(user, ct);
         await _users.SaveChangesAsync(ct);
 
+        var sanitizedRoleForLog = (user.Role ?? string.Empty)
+            .Replace("\r", string.Empty)
+            .Replace("\n", string.Empty);
+
         _logger.LogWarning(
             "Staff account created. NewUserId: {NewUserId}, Role: {Role}",
-            user.Id, user.Role);
+            user.Id, sanitizedRoleForLog);
 
         return new StaffCreatedResponse(user.Id, user.Email.Value, user.Role);
     }
