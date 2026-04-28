@@ -12,8 +12,10 @@ public sealed record LoginRequest(
     [Required] string Password
 );
 
-public sealed record AuthResponse(
-    string Token,
-    DateTime ExpiresAt,
-    string Role
+public sealed record AuthResponse(string Token, DateTime ExpiresAt, string Role);
+public sealed record UpdateAddressRequest(
+    [Required] string Street,
+    [Required] string City,
+    [Required] string PostalCode,
+    [Required] string Country
 );

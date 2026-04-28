@@ -30,11 +30,11 @@ public sealed class AuthService
     public async Task<AuthResponse> RegisterAsync(RegisterRequest req, CancellationToken ct)
     {
         if (await _users.ExistsByEmailAsync(req.Email, ct))
-            throw new ConflictException("Registration could not be completed.");
+            throw new ConflictException("Registration could not be completed email already in use.");
 
   
 
-        var user = User.Create(req.Email, _hasher.Hash(req.Password));
+        var user = User.CreateCustomer(req.Email, _hasher.Hash(req.Password));
         await _users.AddAsync(user, ct);
 
         var session = Session.Create(user.Id, user.Role);

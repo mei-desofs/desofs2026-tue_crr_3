@@ -1,6 +1,8 @@
 
 using TeaShop.Application;
 using TeaShop.Infrastructure;
+using TeaShop.Infrastructure.Data;
+using TeaShop.Infrastructure.Persistence.Seed;
 using TeaShop.Infrastructure.RateLimiting;
 
 
@@ -13,6 +15,14 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
 builder.Services.AddTeaShopRateLimiting();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "Bearer";
+    options.DefaultChallengeScheme = "Bearer";
+}).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+});
 
 builder.Services.AddAuthorization(opts =>
 {
@@ -28,6 +38,7 @@ builder.Services.AddAuthorization(opts =>
         p.RequireAuthenticatedUser()
          .RequireRole("ADMIN"));
 });
+builder.Services.AddScoped<AdminSeeder>();
 
 
 var app = builder.Build();
@@ -56,5 +67,13 @@ app.UseInfrastructureMiddleware();
 
 app.UseAuthorization();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TeaShopDbContext>();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
+    await seeder.SeedAsync(CancellationToken.None);
+}
 
 app.Run();

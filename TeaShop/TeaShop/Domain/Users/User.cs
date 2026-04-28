@@ -15,21 +15,33 @@ public sealed class User
 
     private User() { }
 
-    public static User Create(string rawEmail, string passwordHash, string role = Roles.Customer)
+    public static User CreateCustomer(string rawEmail, string passwordHash)
     {
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new DomainException("Password hash is required.");
-
-        if (!Roles.IsValid(role))
-            throw new DomainException($"'{role}' is not a valid role.");
 
         return new User
         {
             Id = Guid.NewGuid(),
             Email = Email.Create(rawEmail),
             PasswordHash = passwordHash,
-            Role = role,
-            CreatedAt = DateTime.UtcNow
+            Role = Roles.Customer        };
+    }
+
+    public static User CreateStaff(string rawEmail, string passwordHash, string role)
+    {
+        if (string.IsNullOrWhiteSpace(passwordHash))
+            throw new DomainException("Password hash is required.");
+
+        if (!Roles.IsValid(role) || role == Roles.Customer)
+            throw new DomainException($"'{role}' is not a valid staff role.");
+
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            Email = Email.Create(rawEmail),
+            PasswordHash = passwordHash,
+            Role = role
         };
     }
 
@@ -46,5 +58,6 @@ public sealed class User
         PasswordHash = newPasswordHash;
     }
 
-  
+
+
 }

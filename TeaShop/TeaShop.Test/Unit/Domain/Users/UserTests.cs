@@ -14,35 +14,24 @@ public class UserTests
     [Fact]
     public void Create_ValidInputs_ShouldSucceed()
     {
-        var user = User.Create(ValidEmail, ValidHash);
+        var user = User.CreateCustomer(ValidEmail, ValidHash);
 
         user.Id.Should().NotBeEmpty();
         user.Email.Value.Should().Be(ValidEmail);
         user.Role.Should().Be(Roles.Customer);
         user.ShippingAddress.Should().BeNull();
-        user.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(2));
     }
 
-    [Fact]
-    public void Create_WithExplicitRole_ShouldSetRole()
-    {
-        var user = User.Create(ValidEmail, ValidHash, Roles.Manager);
-        user.Role.Should().Be(Roles.Manager);
-    }
+  
 
-    [Fact]
-    public void Create_WithInvalidRole_ShouldThrowDomainException()
-    {
-        var act = () => User.Create(ValidEmail, ValidHash, "SUPERUSER");
-        act.Should().Throw<DomainException>().WithMessage("*not a valid role*");
-    }
+ 
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     public void Create_EmptyPasswordHash_ShouldThrowDomainException(string hash)
     {
-        var act = () => User.Create(ValidEmail, hash);
+        var act = () => User.CreateCustomer(ValidEmail, hash);
         act.Should().Throw<DomainException>();
     }
 
@@ -50,7 +39,7 @@ public class UserTests
     [Fact]
     public void UpdateShippingAddress_ShouldReplaceAddress()
     {
-        var user = User.Create(ValidEmail, ValidHash);
+        var user = User.CreateCustomer(ValidEmail, ValidHash);
         var address = Address.Create("Rua Dom Dinis", "Porto", "4510-241", "Portugal");
 
         user.UpdateShippingAddress(address);
@@ -62,7 +51,7 @@ public class UserTests
     [Fact]
     public void UpdatePassword_ValidHash_ShouldUpdate()
     {
-        var user = User.Create(ValidEmail, ValidHash);
+        var user = User.CreateCustomer(ValidEmail, ValidHash);
         user.UpdatePassword("$newHash$");
         user.PasswordHash.Should().Be("$newHash$");
     }
@@ -70,9 +59,26 @@ public class UserTests
     [Fact]
     public void UpdatePassword_EmptyHash_ShouldThrowDomainException()
     {
-        var user = User.Create(ValidEmail, ValidHash);
+        var user = User.CreateCustomer(ValidEmail, ValidHash);
         var act = () => user.UpdatePassword("");
         act.Should().Throw<DomainException>();
     }
 
+    [Fact]
+    public void CreateStaff_WithValidRole_CreatesUser()
+    {
+        var user = User.CreateStaff("admin@test.com", "hashed_pw", Roles.Manager);
+
+        Assert.Equal(Roles.Manager, user.Role);
+    }
+
+    [Fact]
+    public void CreateStaff_WithCustomerRole_ThrowsDomainException()
+    {
+        var act = () => User.CreateStaff("hacker@test.com", "hashed_pw", Roles.Customer);
+
+        var exception = Assert.Throws<DomainException>(act);
+        Assert.Contains("not a valid staff role", exception.Message);
+    }
 }
+

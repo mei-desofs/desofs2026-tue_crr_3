@@ -53,7 +53,7 @@ public class AuthServiceTests
     public async Task LoginAsync_ValidCredentials_ShouldReturnToken()
     {
         var hash = _hasher.Hash("Str0ng!Pass");
-        var user = User.Create("user@test.com", hash);
+        var user = User.CreateCustomer  ("user@test.com", hash);
 
         _users.FindByEmailAsync("user@test.com", TestContext.Current.CancellationToken).Returns(user);
 
@@ -67,7 +67,7 @@ public class AuthServiceTests
     [Fact]
     public async Task LoginAsync_WrongPassword_ShouldThrowUnauthorizedException()
     {
-        var user = User.Create("user@test.com", _hasher.Hash("correct"));
+        var user = User.CreateCustomer("user@test.com", _hasher.Hash("correct"));
         _users.FindByEmailAsync("user@test.com", TestContext.Current.CancellationToken).Returns(user);
 
         var act = () => _sut.LoginAsync(

@@ -1,0 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+namespace TeaShop.Application.UserManagement;
+
+public sealed record CreateStaffRequest(
+    [Required, EmailAddress] string Email,
+    [Required, MinLength(8), MaxLength(128)] string Password,
+    [Required] string Role
+);
+
+public sealed record StaffCreatedResponse(Guid UserId, string Email, string Role);
