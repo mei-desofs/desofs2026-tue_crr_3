@@ -44,7 +44,7 @@ public sealed class UserService
 
         _logger.LogWarning(
             "Staff account created. NewUserId: {NewUserId}, Role: {Role}",
-            user.Id, req.Role);
+            user.Id, user.Role);
 
         return new StaffCreatedResponse(user.Id, user.Email.Value, user.Role);
     }
