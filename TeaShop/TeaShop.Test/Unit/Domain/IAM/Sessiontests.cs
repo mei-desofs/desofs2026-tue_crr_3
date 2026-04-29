@@ -18,7 +18,7 @@ public class SessionTests
         session.Id.Should().NotBeEmpty();
         session.UserId.Should().Be(_userId);
         session.UserRole.Should().Be(Roles.Customer);
-        session.Token.Value.Should().NotBeNullOrWhiteSpace();
+        session.TokenHash.Should().NotBeNullOrWhiteSpace();
         session.IsRevoked.Should().BeFalse();
         session.ExpiresAt.Should().BeAfter(DateTime.UtcNow);
     }
@@ -87,6 +87,6 @@ public class SessionTests
     {
         var a = Session.Create(_userId, Roles.Customer);
         var b = Session.Create(_userId, Roles.Customer);
-        a.Token.Should().NotBe(b.Token);
+        a.TokenHash.Should().NotBe(b.TokenHash);
     }
 }
