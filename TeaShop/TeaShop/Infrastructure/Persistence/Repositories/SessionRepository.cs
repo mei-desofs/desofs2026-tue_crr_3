@@ -11,9 +11,13 @@ public sealed class SessionRepository : ISessionRepository
 
     public SessionRepository(TeaShopDbContext db) => _db = db;
 
-    public async Task<Session?> FindByTokenAsync(string tokenValue, CancellationToken ct) =>
-        await _db.Sessions
-            .FirstOrDefaultAsync(s => s.Token == SessionToken.FromExisting(tokenValue), ct);
+    public async Task<Session?> FindByTokenAsync(string rawToken, CancellationToken ct)
+    {
+        var tokenHash = Session.HashToken(rawToken);
+
+        return await _db.Sessions
+            .FirstOrDefaultAsync(s => s.TokenHash == tokenHash, ct);
+    }
 
     public async Task<Session?> GetByIdAsync(Guid id, CancellationToken ct) =>
         await _db.Sessions.FindAsync([id], ct);

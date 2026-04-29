@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Users;
 
@@ -8,7 +9,7 @@ public sealed class Session
     public Guid Id { get; private set; }
     public Guid UserId { get; private set; }
     public string UserRole { get; private set; } = null!;
-    public SessionToken Token { get; private set; } = null!;
+    public string TokenHash { get; private set; } = null!;
     public DateTime CreatedAt { get; private set; }
     public DateTime ExpiresAt { get; private set; }
     public bool IsRevoked { get; private set; }
@@ -28,7 +29,7 @@ public sealed class Session
             Id = Guid.NewGuid(),
             UserId = userId,
             UserRole = userRole,
-            Token = SessionToken.Generate(),
+            TokenHash = HashToken(SessionToken.Generate().ToString()),
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.Add(duration),
             IsRevoked = false
@@ -37,6 +38,9 @@ public sealed class Session
 
     public bool IsValid() => !IsRevoked && DateTime.UtcNow < ExpiresAt;
 
+    public static string HashToken(string rawToken) =>
+        Convert.ToHexString(
+            SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawToken)));
     public void Revoke()
     {
         if (IsRevoked)

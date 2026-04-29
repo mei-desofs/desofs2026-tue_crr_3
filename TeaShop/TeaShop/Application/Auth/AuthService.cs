@@ -44,7 +44,7 @@ public sealed class AuthService
         _logger.LogInformation("User registered. EmailHash: {Hash}",
             HashEmail(req.Email));
 
-        return new AuthResponse(session.Token.Value, session.ExpiresAt, user.Role);
+        return new AuthResponse(session.TokenHash, session.ExpiresAt, user.Role);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest req, CancellationToken ct)
@@ -68,7 +68,7 @@ public sealed class AuthService
 
         _logger.LogInformation("Successful login. UserId: {UserId}", user.Id);
 
-        return new AuthResponse(session.Token.Value, session.ExpiresAt, user.Role);
+        return new AuthResponse(session.TokenHash, session.ExpiresAt, user.Role);
     }
 
     public async Task LogoutAsync(Guid sessionId, CancellationToken ct)
