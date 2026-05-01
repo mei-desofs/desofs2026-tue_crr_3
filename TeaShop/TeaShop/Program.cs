@@ -4,7 +4,7 @@ using TeaShop.Infrastructure;
 using TeaShop.Infrastructure.Data;
 using TeaShop.Infrastructure.Persistence.Seed;
 using TeaShop.Infrastructure.RateLimiting;
-
+using TeaShop.Infrastructure.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
