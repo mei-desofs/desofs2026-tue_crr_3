@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeaShop.Application.Catalog;
 
@@ -15,6 +16,7 @@ public sealed class CatalogController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
         var result = await _service.GetAllAsync(ct);
@@ -22,6 +24,7 @@ public sealed class CatalogController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous] // Guests podem ver catálogo (?)
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         try
