@@ -23,7 +23,6 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<ITeaRepository, TeaRepository>();
-        services.AddDbContext<TeaShopDbContext>(opts => opts.UseNpgsql(config.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<PasswordHashingService>();
 
