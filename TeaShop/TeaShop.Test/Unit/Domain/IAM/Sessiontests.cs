@@ -2,6 +2,7 @@
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.IAM;
 using TeaShop.Domain.Users;
+using Xunit;
 
 namespace TeaShop.Tests.Unit.Domain;
 

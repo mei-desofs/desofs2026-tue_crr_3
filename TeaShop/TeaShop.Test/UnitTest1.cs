@@ -1,4 +1,6 @@
-﻿namespace TeaShop.Test
+﻿using Xunit;
+
+namespace TeaShop.Test
 {
     public class UnitTest1
     {
