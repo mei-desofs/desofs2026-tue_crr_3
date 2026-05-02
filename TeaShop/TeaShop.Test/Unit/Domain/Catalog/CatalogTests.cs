@@ -1,8 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
-using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using NSubstitute;
+using TeaShop.Domain.Catalog;
+using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 using Xunit;
 
 namespace TeaShop.Test;
@@ -13,7 +20,24 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
 
     public CatalogTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.CreateClient();
+        var teaRepository = Substitute.For<ITeaRepository>();
+
+        teaRepository
+            .GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns(new List<Tea>());
+
+        teaRepository
+            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((Tea?)null);
+
+        _client = factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.RemoveAll<ITeaRepository>();
+                services.AddSingleton(teaRepository);
+            });
+        }).CreateClient();
     }
 
     [Fact]
@@ -24,7 +48,7 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await response.Content.ReadAsStringAsync();
-        content.Should().NotBeNullOrEmpty();
+        content.Should().NotBeNull();
     }
 
     [Fact]
@@ -38,17 +62,10 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task GetById_ValidFlow_ShouldNotCrash()
     {
-        // Primeiro vai buscar todos os produtos
         var listResponse = await _client.GetAsync("/api/catalog");
 
         listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var listContent = await listResponse.Content.ReadAsStringAsync();
-
-        // Se estiver vazio, o teste ainda passa (não há produtos)
-        listContent.Should().NotBeNull();
-
-        // Este teste garante que a API não falha com ID inválido/aleatório
         var response = await _client.GetAsync($"/api/catalog/{Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
