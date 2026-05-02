@@ -47,6 +47,39 @@ public class UserTests
         user.ShippingAddress.Should().Be(address);
     }
 
+    [Fact]
+    public void UpdateShippingAddress_CalledTwice_ShouldReplaceWithLatest()
+    {
+        var user = User.CreateCustomer(ValidEmail, ValidHash);
+        user.UpdateShippingAddress(Address.Create("Old Street", "Porto", "4510-241", "Portugal"));
+        var newer = Address.Create("New Street", "Lisbon", "1000-001", "Portugal");
+
+        user.UpdateShippingAddress(newer);
+
+        user.ShippingAddress.Should().Be(newer);
+    }
+
+    [Fact]
+    public void RemoveShippingAddress_WithExistingAddress_ShouldSetToNull()
+    {
+        var user = User.CreateCustomer(ValidEmail, ValidHash);
+        user.UpdateShippingAddress(Address.Create("Rua Dom Dinis", "Porto", "4510-241", "Portugal"));
+
+        user.RemoveShippingAddress();
+
+        user.ShippingAddress.Should().BeNull();
+    }
+
+    [Fact]
+    public void RemoveShippingAddress_WhenAlreadyNull_ShouldRemainNull()
+    {
+        var user = User.CreateCustomer(ValidEmail, ValidHash);
+
+        user.RemoveShippingAddress();
+
+        user.ShippingAddress.Should().BeNull();
+    }
+
 
     [Fact]
     public void UpdatePassword_ValidHash_ShouldUpdate()

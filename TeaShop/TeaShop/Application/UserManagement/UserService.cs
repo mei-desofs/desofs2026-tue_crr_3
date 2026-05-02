@@ -19,37 +19,100 @@ public sealed class UserService
         _logger = logger;
     }
 
-    public async Task UpdateAddressAsync(Guid userId, UpdateAddressRequest req, CancellationToken ct)
+    public async Task<AddressResponse?> GetAddressAsync(Guid userId, CancellationToken ct)
     {
-        var user = await _users.FindByIdAsync(userId, ct)
-            ?? throw new NotFoundException("User not found.");
+        try
+        {
+            var user = await _users.FindByIdAsync(userId, ct)
+                ?? throw new NotFoundException(FailureMessages.User.NotFound);
 
-        var newAddress = Address.Create(req.Street, req.City, req.PostalCode, req.Country);
+            if (user.ShippingAddress is null)
+                return null;
 
-        user.UpdateShippingAddress(newAddress);
-
-        await _users.SaveChangesAsync(ct);
+            return new AddressResponse(
+                user.ShippingAddress.Street,
+                user.ShippingAddress.City,
+                user.ShippingAddress.PostalCode,
+                user.ShippingAddress.Country);
+        }
+        catch (Exception ex) when (ex is not DomainException)
+        {
+            _logger.LogError(ex, "Unexpected error while retrieving address for user. Id: {UserId}", userId);
+            throw;
+        }
     }
 
-    public async Task<StaffCreatedResponse> CreateStaffAsync(
-        CreateStaffRequest req, CancellationToken ct)
+    public async Task UpdateAddressAsync(Guid userId, UpdateAddressRequest req, CancellationToken ct)
     {
-        if (await _users.ExistsByEmailAsync(req.Email, ct))
-            throw new ConflictException("A user with this email already exists.");
+        try
+        {
+            var user = await _users.FindByIdAsync(userId, ct)
+                ?? throw new NotFoundException(FailureMessages.User.NotFound);
 
-        var user = User.CreateStaff(req.Email, _hasher.Hash(req.Password), req.Role);
+            var newAddress = Address.Create(req.Street, req.City, req.PostalCode, req.Country);
 
-        await _users.AddAsync(user, ct);
-        await _users.SaveChangesAsync(ct);
+            user.UpdateShippingAddress(newAddress);
 
-        var sanitizedRoleForLog = (user.Role ?? string.Empty)
-            .Replace("\r", string.Empty)
-            .Replace("\n", string.Empty);
+            await _users.SaveChangesAsync(ct);
 
-        _logger.LogWarning(
-            "Staff account created. NewUserId: {NewUserId}, Role: {Role}",
-            user.Id, sanitizedRoleForLog);
+            _logger.LogInformation("Address updated for user. Id: {UserId}", userId);
+        }
+        catch (Exception ex) when (ex is not DomainException)
+        {
+            _logger.LogError(ex, "Unexpected error while updating address for user. Id: {UserId}", userId);
+            throw;
+        }
+    }
 
-        return new StaffCreatedResponse(user.Id, user.Email.Value, user.Role);
+    public async Task RemoveAddressAsync(Guid userId, CancellationToken ct)
+    {
+        try
+        {
+            var user = await _users.FindByIdAsync(userId, ct)
+                ?? throw new NotFoundException(FailureMessages.User.NotFound);
+
+            if (user.ShippingAddress is null)
+                throw new NotFoundException(FailureMessages.User.AddressNotFound);
+
+            user.RemoveShippingAddress();
+
+            await _users.SaveChangesAsync(ct);
+
+            _logger.LogInformation("Address removed for user. Id: {UserId}", userId);
+        }
+        catch (Exception ex) when (ex is not DomainException)
+        {
+            _logger.LogError(ex, "Unexpected error while removing address for user. Id: {UserId}", userId);
+            throw;
+        }
+    }
+
+    public async Task<StaffCreatedResponse> CreateStaffAsync(CreateStaffRequest req, CancellationToken ct)
+    {
+        try
+        {
+            if (await _users.ExistsByEmailAsync(req.Email, ct))
+                throw new ConflictException(FailureMessages.User.EmailAlreadyExists);
+
+            var user = User.CreateStaff(req.Email, _hasher.Hash(req.Password), req.Role);
+
+            await _users.AddAsync(user, ct);
+            await _users.SaveChangesAsync(ct);
+
+            var sanitizedRoleForLog = (user.Role ?? string.Empty)
+                .Replace("\r", string.Empty)
+                .Replace("\n", string.Empty);
+
+            _logger.LogWarning(
+                "Staff account created. NewUserId: {NewUserId}, Role: {Role}",
+                user.Id, sanitizedRoleForLog);
+
+            return new StaffCreatedResponse(user.Id, user.Email.Value, user.Role);
+        }
+        catch (Exception ex) when (ex is not DomainException)
+        {
+            _logger.LogError(ex, "Unexpected error while creating staff account.");
+            throw;
+        }
     }
 }
