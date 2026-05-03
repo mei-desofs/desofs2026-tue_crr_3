@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeaShop.Infrastructure.Data;
@@ -11,9 +12,11 @@ using TeaShop.Infrastructure.Data;
 namespace TeaShop.Migrations
 {
     [DbContext(typeof(TeaShopDbContext))]
-    partial class TeaShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260501172307_AddCatalogTables")]
+    partial class AddCatalogTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,12 +33,11 @@ namespace TeaShop.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("TeaShop.Domain.Catalog.Tea", b =>
@@ -49,21 +51,17 @@ namespace TeaShop.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
+                        .HasColumnType("text");
 
                     b.Property<decimal>("Price")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<int>("Stock")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Teas", (string)null);
+                    b.ToTable("Teas");
                 });
 
             modelBuilder.Entity("TeaShop.Domain.IAM.Session", b =>
@@ -132,15 +130,6 @@ namespace TeaShop.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("TeaShop.Domain.Catalog.Tea", b =>
-                {
-                    b.HasOne("TeaShop.Domain.Catalog.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("TeaShop.Domain.Users.User", b =>
