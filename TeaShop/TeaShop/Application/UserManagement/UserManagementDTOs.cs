@@ -8,3 +8,5 @@ public sealed record CreateStaffRequest(
 );
 
 public sealed record StaffCreatedResponse(Guid UserId, string Email, string Role);
+
+public sealed record AddressResponse(string Street, string City, string PostalCode, string Country);
