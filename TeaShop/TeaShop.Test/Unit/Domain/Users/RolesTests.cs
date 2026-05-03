@@ -1,7 +1,7 @@
 ﻿// tests/TeaShop.Tests.Unit/Domain/RolesTests.cs
 using FluentAssertions;
 using TeaShop.Domain.Users;
-
+using Xunit;
 namespace TeaShop.Tests.Unit.Domain;
 
 public class RolesTests

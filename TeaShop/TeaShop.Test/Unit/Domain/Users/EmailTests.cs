@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Users;
-
+using Xunit;
 namespace TeaShop.Test.Unit.Domain.Users;
 
 public class EmailTests

@@ -13,19 +13,22 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration config)
     {
-        services.AddDbContext<TeaShopDbContext>(opts => opts.UseNpgsql(config.GetConnectionString("DefaultConnection")));
+        services.AddDbContext<TeaShopDbContext>(opts =>
+            opts.UseNpgsql(config.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITeaRepository, TeaRepository>();
+
         services.AddSingleton<PasswordHashingService>();
 
         return services;
     }
+
     public static WebApplication UseInfrastructureMiddleware(this WebApplication app)
     {
         app.UseMiddleware<GenericExceptionMiddleware>();
-
         app.UseMiddleware<IAMMiddleware>();
 
         return app;
