@@ -1,4 +1,5 @@
 using TeaShop.Application.Auth;
+using TeaShop.Application.Products;
 using TeaShop.Application.UserManagement;
 using TeaShop.Application.Catalog;
 
@@ -10,6 +11,7 @@ public static class DependencyInjection
     {
         services.AddScoped<AuthService>();
         services.AddScoped<UserService>();
+        services.AddScoped<CategoryService>();
         services.AddScoped<CatalogService>();
         return services;
     }
