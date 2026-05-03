@@ -1,6 +1,7 @@
 using FluentAssertions;
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Products;
+using Xunit;
 
 namespace TeaShop.Test.Unit.Domain.Products;
 

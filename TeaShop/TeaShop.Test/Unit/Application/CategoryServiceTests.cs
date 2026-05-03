@@ -7,6 +7,8 @@ using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Products;
 using TeaShop.Domain.Users;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
+using Xunit;
+
 
 namespace TeaShop.Test.Unit.Application;
 
@@ -42,9 +44,9 @@ public class CategoryServiceTests
     public async Task CreateAsync_ValidRequest_ShouldReturnCreatedCategory()
     {
         var req = new CreateCategoryRequest("Green Tea", "A refreshing green tea.");
-        _categories.ExistsByNameAsync("Green Tea", TestContext.Current.CancellationToken).Returns(false);
+        _categories.ExistsByNameAsync("Green Tea", CancellationToken.None).Returns(false);
 
-        var result = await _sut.CreateAsync(req, AdminCaller(), TestContext.Current.CancellationToken);
+        var result = await _sut.CreateAsync(req, AdminCaller(), CancellationToken.None);
 
         result.Id.Should().NotBeEmpty();
         result.Name.Should().Be("Green Tea");
@@ -56,24 +58,24 @@ public class CategoryServiceTests
     public async Task CreateAsync_ValidRequest_ShouldPersistCategory()
     {
         var req = new CreateCategoryRequest("Black Tea", null);
-        _categories.ExistsByNameAsync("Black Tea", TestContext.Current.CancellationToken).Returns(false);
+        _categories.ExistsByNameAsync("Black Tea", CancellationToken.None).Returns(false);
 
-        await _sut.CreateAsync(req, AdminCaller(), TestContext.Current.CancellationToken);
+        await _sut.CreateAsync(req, AdminCaller(), CancellationToken.None);
 
-        await _categories.Received(1).AddAsync(Arg.Any<Category>(), TestContext.Current.CancellationToken);
-        await _categories.Received(1).SaveChangesAsync(TestContext.Current.CancellationToken);
+        await _categories.Received(1).AddAsync(Arg.Any<Category>(), CancellationToken.None);
+        await _categories.Received(1).SaveChangesAsync(CancellationToken.None);
     }
 
     [Fact]
     public async Task CreateAsync_DuplicateName_ShouldThrowConflictException()
     {
         var req = new CreateCategoryRequest("Green Tea", null);
-        _categories.ExistsByNameAsync("Green Tea", TestContext.Current.CancellationToken).Returns(true);
+        _categories.ExistsByNameAsync("Green Tea", CancellationToken.None).Returns(true);
 
-        var act = async () => await _sut.CreateAsync(req, AdminCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.CreateAsync(req, AdminCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>();
-        await _categories.DidNotReceive().AddAsync(Arg.Any<Category>(), TestContext.Current.CancellationToken);
+        await _categories.DidNotReceive().AddAsync(Arg.Any<Category>(), CancellationToken.None);
     }
 
     [Fact]
@@ -81,7 +83,7 @@ public class CategoryServiceTests
     {
         var req = new CreateCategoryRequest("Green Tea", null);
 
-        var act = async () => await _sut.CreateAsync(req, UnauthenticatedCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.CreateAsync(req, UnauthenticatedCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<UnauthorizedException>();
     }
@@ -91,7 +93,7 @@ public class CategoryServiceTests
     {
         var req = new CreateCategoryRequest("Green Tea", null);
 
-        var act = async () => await _sut.CreateAsync(req, CustomerCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.CreateAsync(req, CustomerCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<ForbiddenException>();
     }
@@ -102,36 +104,36 @@ public class CategoryServiceTests
     public async Task UpdateAsync_ValidRequest_ShouldReturnUpdatedCategory()
     {
         var existing = Category.Create("Old Name", "Old desc.");
-        _categories.FindByIdAsync(existing.Id, TestContext.Current.CancellationToken).Returns(existing);
-        _categories.ExistsByNameAsync("New Name", TestContext.Current.CancellationToken).Returns(false);
+        _categories.FindByIdAsync(existing.Id, CancellationToken.None).Returns(existing);
+        _categories.ExistsByNameAsync("New Name", CancellationToken.None).Returns(false);
         var req = new UpdateCategoryRequest("New Name", "New desc.");
 
-        var result = await _sut.UpdateAsync(existing.Id, req, AdminCaller(), TestContext.Current.CancellationToken);
+        var result = await _sut.UpdateAsync(existing.Id, req, AdminCaller(), CancellationToken.None);
 
         result.Name.Should().Be("New Name");
         result.Description.Should().Be("New desc.");
-        await _categories.Received(1).SaveChangesAsync(TestContext.Current.CancellationToken);
+        await _categories.Received(1).SaveChangesAsync(CancellationToken.None);
     }
 
     [Fact]
     public async Task UpdateAsync_SameNameCaseInsensitive_ShouldNotCheckForDuplicate()
     {
         var existing = Category.Create("Green Tea");
-        _categories.FindByIdAsync(existing.Id, TestContext.Current.CancellationToken).Returns(existing);
+        _categories.FindByIdAsync(existing.Id, CancellationToken.None).Returns(existing);
         var req = new UpdateCategoryRequest("green tea", null);
 
-        await _sut.UpdateAsync(existing.Id, req, AdminCaller(), TestContext.Current.CancellationToken);
+        await _sut.UpdateAsync(existing.Id, req, AdminCaller(), CancellationToken.None);
 
-        await _categories.DidNotReceive().ExistsByNameAsync(Arg.Any<string>(), TestContext.Current.CancellationToken);
+        await _categories.DidNotReceive().ExistsByNameAsync(Arg.Any<string>(), CancellationToken.None);
     }
 
     [Fact]
     public async Task UpdateAsync_CategoryNotFound_ShouldThrowNotFoundException()
     {
-        _categories.FindByIdAsync(Arg.Any<Guid>(), TestContext.Current.CancellationToken).Returns((Category?)null);
+        _categories.FindByIdAsync(Arg.Any<Guid>(), CancellationToken.None).Returns((Category?)null);
         var req = new UpdateCategoryRequest("New Name", null);
 
-        var act = async () => await _sut.UpdateAsync(Guid.NewGuid(), req, AdminCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.UpdateAsync(Guid.NewGuid(), req, AdminCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
     }
@@ -140,20 +142,20 @@ public class CategoryServiceTests
     public async Task UpdateAsync_DuplicateName_ShouldThrowConflictException()
     {
         var existing = Category.Create("Old Name");
-        _categories.FindByIdAsync(existing.Id, TestContext.Current.CancellationToken).Returns(existing);
-        _categories.ExistsByNameAsync("Taken Name", TestContext.Current.CancellationToken).Returns(true);
+        _categories.FindByIdAsync(existing.Id, CancellationToken.None).Returns(existing);
+        _categories.ExistsByNameAsync("Taken Name", CancellationToken.None).Returns(true);
         var req = new UpdateCategoryRequest("Taken Name", null);
 
-        var act = async () => await _sut.UpdateAsync(existing.Id, req, AdminCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.UpdateAsync(existing.Id, req, AdminCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>();
-        await _categories.DidNotReceive().SaveChangesAsync(TestContext.Current.CancellationToken);
+        await _categories.DidNotReceive().SaveChangesAsync(CancellationToken.None);
     }
 
     [Fact]
     public async Task UpdateAsync_UnauthenticatedCaller_ShouldThrowUnauthorizedException()
     {
-        var act = async () => await _sut.UpdateAsync(Guid.NewGuid(), new UpdateCategoryRequest(null, null), UnauthenticatedCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.UpdateAsync(Guid.NewGuid(), new UpdateCategoryRequest(null, null), UnauthenticatedCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<UnauthorizedException>();
     }
@@ -161,7 +163,7 @@ public class CategoryServiceTests
     [Fact]
     public async Task UpdateAsync_NonAdminCaller_ShouldThrowForbiddenException()
     {
-        var act = async () => await _sut.UpdateAsync(Guid.NewGuid(), new UpdateCategoryRequest(null, null), CustomerCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.UpdateAsync(Guid.NewGuid(), new UpdateCategoryRequest(null, null), CustomerCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<ForbiddenException>();
     }
@@ -172,29 +174,29 @@ public class CategoryServiceTests
     public async Task DeleteAsync_ExistingCategory_ShouldRemoveAndSave()
     {
         var existing = Category.Create("Oolong Tea");
-        _categories.FindByIdAsync(existing.Id, TestContext.Current.CancellationToken).Returns(existing);
+        _categories.FindByIdAsync(existing.Id, CancellationToken.None).Returns(existing);
 
-        await _sut.DeleteAsync(existing.Id, AdminCaller(), TestContext.Current.CancellationToken);
+        await _sut.DeleteAsync(existing.Id, AdminCaller(), CancellationToken.None);
 
-        await _categories.Received(1).RemoveAsync(existing, TestContext.Current.CancellationToken);
-        await _categories.Received(1).SaveChangesAsync(TestContext.Current.CancellationToken);
+        await _categories.Received(1).RemoveAsync(existing, CancellationToken.None);
+        await _categories.Received(1).SaveChangesAsync(CancellationToken.None);
     }
 
     [Fact]
     public async Task DeleteAsync_CategoryNotFound_ShouldThrowNotFoundException()
     {
-        _categories.FindByIdAsync(Arg.Any<Guid>(), TestContext.Current.CancellationToken).Returns((Category?)null);
+        _categories.FindByIdAsync(Arg.Any<Guid>(), CancellationToken.None).Returns((Category?)null);
 
-        var act = async () => await _sut.DeleteAsync(Guid.NewGuid(), AdminCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.DeleteAsync(Guid.NewGuid(), AdminCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
-        await _categories.DidNotReceive().RemoveAsync(Arg.Any<Category>(), TestContext.Current.CancellationToken);
+        await _categories.DidNotReceive().RemoveAsync(Arg.Any<Category>(), CancellationToken.None);
     }
 
     [Fact]
     public async Task DeleteAsync_UnauthenticatedCaller_ShouldThrowUnauthorizedException()
     {
-        var act = async () => await _sut.DeleteAsync(Guid.NewGuid(), UnauthenticatedCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.DeleteAsync(Guid.NewGuid(), UnauthenticatedCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<UnauthorizedException>();
     }
@@ -202,7 +204,7 @@ public class CategoryServiceTests
     [Fact]
     public async Task DeleteAsync_NonAdminCaller_ShouldThrowForbiddenException()
     {
-        var act = async () => await _sut.DeleteAsync(Guid.NewGuid(), CustomerCaller(), TestContext.Current.CancellationToken);
+        var act = async () => await _sut.DeleteAsync(Guid.NewGuid(), CustomerCaller(), CancellationToken.None);
 
         await act.Should().ThrowAsync<ForbiddenException>();
     }

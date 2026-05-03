@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TeaShop.Domain.Catalog;
+using TeaShop.Domain.Products;
 
 namespace TeaShop.Infrastructure.Data;
 
