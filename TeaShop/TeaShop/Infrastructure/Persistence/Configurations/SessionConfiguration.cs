@@ -10,14 +10,11 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
     {
         b.HasKey(s => s.Id);
 
-        b.Property(s => s.Token)
-         .HasConversion(
-             token => token.Value,
-             raw => SessionToken.FromExisting(raw))
-         .HasMaxLength(128)
-         .IsRequired();
+        b.HasIndex(s => s.TokenHash).IsUnique();
 
-        b.HasIndex(s => s.Token).IsUnique();
+        b.Property(s => s.TokenHash)
+         .HasMaxLength(64)   
+         .IsRequired();
 
         b.Property(s => s.UserId).IsRequired();
         b.Property(s => s.UserRole).HasMaxLength(20).IsRequired();
