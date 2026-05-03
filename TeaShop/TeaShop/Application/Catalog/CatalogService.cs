@@ -45,8 +45,9 @@ public sealed class CatalogService
 
         if (categoryId.HasValue)
         {
+            var categoryIdValue = categoryId.Value;
             teas = teas
-                .Where(t => t.CategoryId == categoryId.Value)
+                .Where(t => t.CategoryId == categoryIdValue)
                 .ToList();
         }
 
