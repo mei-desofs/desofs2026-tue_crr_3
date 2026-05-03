@@ -17,14 +17,16 @@ public sealed class CatalogController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] Guid? categoryId,
+        CancellationToken ct)
     {
-        var result = await _service.GetAllAsync(ct);
+        var result = await _service.GetAllAsync(categoryId, ct);
         return Ok(result);
     }
 
     [HttpGet("{id}")]
-    [AllowAnonymous] // Guests podem ver catálogo (?)
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         try

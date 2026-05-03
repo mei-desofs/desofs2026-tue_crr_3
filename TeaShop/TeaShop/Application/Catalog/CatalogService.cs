@@ -39,4 +39,22 @@ public sealed class CatalogService
             tea.Stock
         );
     }
+    public async Task<List<TeaDto>> GetAllAsync(Guid? categoryId, CancellationToken ct)
+    {
+        var teas = await _teaRepository.GetAllAsync(ct);
+
+        if (categoryId.HasValue)
+        {
+            teas = teas
+                .Where(t => t.CategoryId == categoryId.Value)
+                .ToList();
+        }
+
+        return teas.Select(t => new TeaDto(
+            t.Id,
+            t.Name,
+            t.Price,
+            t.Stock
+        )).ToList();
+    }
     }

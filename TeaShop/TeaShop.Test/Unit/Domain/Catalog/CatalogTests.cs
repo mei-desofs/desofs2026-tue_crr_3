@@ -70,4 +70,13 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+    [Fact]
+    public async Task GetAll_WithCategoryFilter_ShouldReturn200()
+    {
+        var categoryId = Guid.NewGuid();
+
+        var response = await _client.GetAsync($"/api/catalog?categoryId={categoryId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 }
