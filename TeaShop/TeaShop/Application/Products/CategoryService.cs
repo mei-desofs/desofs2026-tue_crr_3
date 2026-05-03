@@ -31,7 +31,10 @@ public sealed class CategoryService
             await _categories.AddAsync(category, ct);
             await _categories.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Category created. Id: {CategoryId}, Name: {Name}", category.Id, category.Name);
+            _logger.LogInformation(
+                "Category created. Id: {CategoryId}, Name: {Name}",
+                category.Id,
+                SanitizeForLog(category.Name));
 
             return ToResponse(category);
         }
@@ -101,6 +104,9 @@ public sealed class CategoryService
         if (!caller.IsInRole(Roles.Admin))
             throw new ForbiddenException();
     }
+
+    private static string SanitizeForLog(string value) =>
+        value.Replace("\r", string.Empty).Replace("\n", string.Empty);
 
     private static CategoryResponse ToResponse(Category c) =>
         new(c.Id, c.Name, c.Description, c.CreatedAt);
