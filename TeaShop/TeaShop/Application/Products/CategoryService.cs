@@ -54,11 +54,10 @@ public sealed class CategoryService
             var category = await _categories.FindByIdAsync(id, ct)
                 ?? throw new NotFoundException($"Category '{id}' not found.");
 
-            if (req.Name is not null && !req.Name.Trim().Equals(category.Name, StringComparison.OrdinalIgnoreCase))
-            {
-                if (await _categories.ExistsByNameAsync(req.Name.Trim(), ct))
-                    throw new ConflictException($"A category named '{req.Name}' already exists.");
-            }
+            if (req.Name is not null
+                && !req.Name.Trim().Equals(category.Name, StringComparison.OrdinalIgnoreCase)
+                && await _categories.ExistsByNameAsync(req.Name.Trim(), ct))
+                throw new ConflictException($"A category named '{req.Name}' already exists.");
 
             category.Update(req.Name, req.Description);
 
