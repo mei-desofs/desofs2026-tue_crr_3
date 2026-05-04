@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
 using TeaShop.Domain.Catalog;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
+using System.Text;
+using System.Text.Json;
 using Xunit;
 
 namespace TeaShop.Test;
@@ -78,5 +80,25 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.GetAsync($"/api/catalog?categoryId={categoryId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+    [Fact]
+    public async Task Create_WithoutAuthentication_ShouldReturn401()
+    {
+        var request = new
+        {
+            name = "Green Tea",
+            price = 10,
+            stock = 5,
+            categoryId = Guid.NewGuid()
+        };
+
+        var content = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json");
+
+        var response = await _client.PostAsync("/api/catalog", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

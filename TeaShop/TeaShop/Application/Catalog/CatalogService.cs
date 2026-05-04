@@ -58,4 +58,22 @@ public sealed class CatalogService
             t.Stock
         )).ToList();
     }
+    public async Task<TeaDto> CreateAsync(CreateTeaRequestDto request, CancellationToken ct)
+    {
+        var tea = Tea.Create(
+            request.Name,
+            request.Price,
+            request.Stock,
+            request.CategoryId
+        );
+
+        await _teaRepository.AddAsync(tea, ct);
+
+        return new TeaDto(
+            tea.Id,
+            tea.Name,
+            tea.Price,
+            tea.Stock
+        );
+    }
     }

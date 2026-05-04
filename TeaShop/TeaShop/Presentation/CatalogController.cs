@@ -39,4 +39,13 @@ public sealed class CatalogController : ControllerBase
             return NotFound();
         }
     }
+    [HttpPost]
+    [Authorize(Roles = "ADMIN,MANAGER")]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateTeaRequestDto request,
+        CancellationToken ct)
+    {
+        var result = await _service.CreateAsync(request, ct);
+        return Created($"/api/catalog/{result.Id}", result);
+    }
 }
