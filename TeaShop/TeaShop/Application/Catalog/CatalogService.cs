@@ -76,4 +76,27 @@ public sealed class CatalogService
             tea.Stock
         );
     }
+    public async Task<TeaDto> UpdateAsync(Guid id, UpdateTeaRequestDto request, CancellationToken ct)
+    {
+        var tea = await _teaRepository.GetByIdAsync(id, ct);
+
+        if (tea is null)
+            throw new KeyNotFoundException("Tea not found.");
+
+        tea.Update(
+            request.Name,
+            request.Price,
+            request.Stock,
+            request.CategoryId
+        );
+
+        await _teaRepository.SaveChangesAsync(ct);
+
+        return new TeaDto(
+            tea.Id,
+            tea.Name,
+            tea.Price,
+            tea.Stock
+        );
+    }
     }

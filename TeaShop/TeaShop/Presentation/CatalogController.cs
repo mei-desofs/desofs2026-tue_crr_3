@@ -48,4 +48,21 @@ public sealed class CatalogController : ControllerBase
         var result = await _service.CreateAsync(request, ct);
         return Created($"/api/catalog/{result.Id}", result);
     }
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN,MANAGER")]
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] UpdateTeaRequestDto request,
+        CancellationToken ct)
+    {
+        try
+        {
+            var result = await _service.UpdateAsync(id, request, ct);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
 }

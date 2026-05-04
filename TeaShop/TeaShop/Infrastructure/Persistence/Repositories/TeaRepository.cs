@@ -28,4 +28,8 @@ public sealed class TeaRepository : ITeaRepository
         await _context.Teas.AddAsync(tea, ct);
         await _context.SaveChangesAsync(ct);
     }
+    public async Task SaveChangesAsync(CancellationToken ct)
+    {
+        await _context.SaveChangesAsync(ct);
+    }
 }

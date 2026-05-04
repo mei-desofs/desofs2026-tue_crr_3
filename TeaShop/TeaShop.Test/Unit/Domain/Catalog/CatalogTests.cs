@@ -81,6 +81,7 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
     [Fact]
     public async Task Create_WithoutAuthentication_ShouldReturn401()
     {
@@ -98,6 +99,26 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
             "application/json");
 
         var response = await _client.PostAsync("/api/catalog", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+    [Fact]
+    public async Task Update_WithoutAuthentication_ShouldReturn401()
+    {
+       var request = new
+       {
+           name = "Updated Tea",
+           price = 12,
+           stock = 8,
+           categoryId = Guid.NewGuid()
+       };
+
+        var content = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json");
+
+        var response = await _client.PutAsync($"/api/catalog/{Guid.NewGuid()}", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
