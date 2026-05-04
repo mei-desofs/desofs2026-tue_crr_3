@@ -99,4 +99,14 @@ public sealed class CatalogService
             tea.Stock
         );
     }
+    public async Task DeleteAsync(Guid id, CancellationToken ct)
+    {
+        var tea = await _teaRepository.GetByIdAsync(id, ct);
+
+        if (tea is null)
+            throw new KeyNotFoundException("Tea not found.");
+
+        _teaRepository.Remove(tea);
+        await _teaRepository.SaveChangesAsync(ct);
+    }
     }

@@ -64,5 +64,20 @@ public sealed class CatalogController : ControllerBase
         {
             return NotFound();
         }
+
+    }
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "ADMIN,MANAGER")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            await _service.DeleteAsync(id, ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
     }
 }

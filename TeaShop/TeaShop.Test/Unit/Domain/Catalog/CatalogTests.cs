@@ -122,4 +122,11 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+    [Fact]
+    public async Task Delete_WithoutAuthentication_ShouldReturn401()
+    {
+        var response = await _client.DeleteAsync($"/api/catalog/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }

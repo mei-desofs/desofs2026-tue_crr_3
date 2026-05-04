@@ -32,4 +32,10 @@ public sealed class TeaRepository : ITeaRepository
     {
         await _context.SaveChangesAsync(ct);
     }
+
+    public void Remove(Tea tea)
+    {
+        _context.Teas.Remove(tea);
+    }
+
 }
