@@ -41,6 +41,16 @@ public sealed class OrderController : ControllerBase
             return NotFound();
         }
     }
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetMyOrders(CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var result = await _orderService.GetMyOrdersAsync(userId, ct);
+        return Ok(result);
+    }
 
     private bool TryGetUserId(out Guid userId) =>
         Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out userId);

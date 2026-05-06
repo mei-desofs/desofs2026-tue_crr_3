@@ -68,4 +68,27 @@ public sealed class OrderService
             )).ToList()
         );
     }
+    
+    public async Task<List<OrderDto>> GetMyOrdersAsync(
+    Guid userId,
+    CancellationToken ct)
+
+    {
+    if (userId == Guid.Empty)
+        throw new ArgumentException("Invalid user id");
+
+    var orders = await _orderRepository.GetByUserIdAsync(userId, ct);
+
+    return orders.Select(order => new OrderDto(
+        order.Id,
+        order.UserId,
+        order.Status.ToString(),
+        order.CreatedAt,
+        order.Items.Select(i => new OrderItemDto(
+            i.TeaId,
+            i.Quantity,
+            i.UnitPrice
+        )).ToList()
+    )).ToList();
+    }
 }
