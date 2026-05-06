@@ -43,14 +43,14 @@ public sealed class CatalogController : ControllerBase
 
     [HttpPatch("{id}/stock")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateStock(
+    public async Task<IActionResult> AdjustStock(
         Guid id,
-        [FromBody] UpdateStockRequest request,
+        [FromBody] AdjustStockRequest request,
         CancellationToken ct)
     {
         try
         {
-            var result = await _service.UpdateStockAsync(id, request, ct);
+            var result = await _service.AdjustStockAsync(id, request, ct);
             return Ok(result);
         }
         catch (ArgumentException ex)
