@@ -6,4 +6,5 @@ public interface ITeaRepository
 {
     Task<List<Tea>> GetAllAsync(CancellationToken ct);
     Task<Tea?> GetByIdAsync(Guid id, CancellationToken ct);
+    Task UpdateAsync(Tea tea, CancellationToken ct);
 }
