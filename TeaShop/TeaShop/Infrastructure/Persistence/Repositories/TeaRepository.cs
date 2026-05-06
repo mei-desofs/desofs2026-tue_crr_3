@@ -23,4 +23,10 @@ public sealed class TeaRepository : ITeaRepository
     {
         return await _context.Teas.FindAsync(new object[] { id }, ct);
     }
+
+    public async Task UpdateAsync(Tea tea, CancellationToken ct)
+{
+    _context.Teas.Update(tea);
+    await _context.SaveChangesAsync(ct);
+}
 }

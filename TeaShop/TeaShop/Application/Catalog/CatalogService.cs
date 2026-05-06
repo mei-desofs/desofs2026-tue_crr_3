@@ -58,4 +58,29 @@ public sealed class CatalogService
             t.Stock
         )).ToList();
     }
+
+    public async Task<TeaDto> UpdateStockAsync(Guid id, UpdateStockRequest request, CancellationToken ct)
+{
+    if (id == Guid.Empty)
+        throw new ArgumentException("Invalid tea id");
+
+    if (request.Stock < 0)
+        throw new ArgumentException("Stock cannot be negative");
+
+    var tea = await _teaRepository.GetByIdAsync(id, ct);
+
+    if (tea is null)
+        throw new KeyNotFoundException("Tea not found");
+
+    tea.UpdateStock(request.Stock);
+
+    await _teaRepository.UpdateAsync(tea, ct);
+
+    return new TeaDto(
+        tea.Id,
+        tea.Name,
+        tea.Price,
+        tea.Stock
+    );
+}
     }

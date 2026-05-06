@@ -6,3 +6,5 @@ public sealed record TeaDto(
     decimal Price,
     int Stock
 );
+
+public sealed record UpdateStockRequest(int Stock);
