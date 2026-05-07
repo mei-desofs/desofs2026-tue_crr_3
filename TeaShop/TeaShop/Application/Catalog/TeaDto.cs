@@ -7,4 +7,4 @@ public sealed record TeaDto(
     int Stock
 );
 
-public sealed record UpdateStockRequest(int Stock);
+public sealed record AdjustStockRequest(int QuantityChange);
