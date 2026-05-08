@@ -1,6 +1,7 @@
 ﻿// tests/TeaShop.Tests.Unit/Domain/UserTests.cs
 using FluentAssertions;
 using TeaShop.Domain.Exceptions;
+using TeaShop.Domain.IAM;
 using TeaShop.Domain.Users;
 using Xunit;
 
@@ -86,22 +87,22 @@ public class UserTests
     public void UpdatePassword_ValidHash_ShouldUpdate()
     {
         var user = User.CreateCustomer(ValidEmail, ValidHash);
-        user.UpdatePassword("$newHash$");
-        user.PasswordHash.Should().Be("$newHash$");
+        user.UpdatePassword(new PasswordHash ("$newHashPassword$"));
+        user.PasswordHash.Value.Should().Be("$newHashPassword$");
     }
 
     [Fact]
     public void UpdatePassword_EmptyHash_ShouldThrowDomainException()
     {
         var user = User.CreateCustomer(ValidEmail, ValidHash);
-        var act = () => user.UpdatePassword("");
+        var act = () => user.UpdatePassword(new PasswordHash(""));
         act.Should().Throw<DomainException>();
     }
 
     [Fact]
     public void CreateStaff_WithValidRole_CreatesUser()
     {
-        var user = User.CreateStaff("admin@test.com", "hashed_pw", Roles.Manager);
+        var user = User.CreateStaff("admin@test.com", "hashed_password", Roles.Manager);
 
         Assert.Equal(Roles.Manager, user.Role);
     }

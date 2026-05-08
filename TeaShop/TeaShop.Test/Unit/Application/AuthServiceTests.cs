@@ -15,21 +15,23 @@ public class AuthServiceTests
 {
     private readonly IUserRepository _users = Substitute.For<IUserRepository>();
     private readonly ISessionRepository _sessions = Substitute.For<ISessionRepository>();
+    private readonly IPasswordPolicyChecker _policyChecker = Substitute.For<IPasswordPolicyChecker>();
     private readonly PasswordHashingService _hasher = new();
     private readonly AuthService _sut;
 
     public AuthServiceTests()
     {
-        _sut = new AuthService(_users, _sessions, _hasher, NullLogger<AuthService>.Instance);
+        _sut = new AuthService(_users, _sessions, _hasher, _policyChecker, NullLogger<AuthService>.Instance);
     }
 
     [Fact]
     public async Task RegisterAsync_NewUser_ShouldReturnTokenAndRole()
     {
         _users.ExistsByEmailAsync(Arg.Any<string>(), CancellationToken.None).Returns(false);
+        _policyChecker.IsValidAsync(Arg.Any<string>()).Returns(true);
 
         var result = await _sut.RegisterAsync(
-            new RegisterRequest("user@test.com", "Str0ng!Pass"),
+            new RegisterRequest("user@test.com", "AJIU54HashedUnlocker"),
             CancellationToken.None);
 
         result.Token.Should().NotBeNullOrWhiteSpace();

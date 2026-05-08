@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AtleX.HaveIBeenPwned" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
@@ -29,7 +30,6 @@
 
   <ItemGroup>
     <Folder Include="Application\UserManagement\" />
-    <Folder Include="Domain\IAM\" />
     <Folder Include="Presentation\" />
   </ItemGroup>
 

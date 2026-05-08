@@ -3,8 +3,8 @@ using TeaShop.Application;
 using TeaShop.Infrastructure;
 using TeaShop.Infrastructure.Data;
 using TeaShop.Infrastructure.Persistence.Seed;
-using TeaShop.Infrastructure.RateLimiting;
 using TeaShop.Infrastructure.Middleware;
+using TeaShop.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
