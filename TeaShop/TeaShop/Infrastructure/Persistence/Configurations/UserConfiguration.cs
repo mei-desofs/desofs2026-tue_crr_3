@@ -33,7 +33,13 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         b.Property(u => u.CreatedAt).IsRequired();
 
-       
+        b.Property(u => u.AccessFailedCount)
+     .HasDefaultValue(0)
+     .IsRequired();
+
+        b.Property(u => u.LockoutEnd)
+         .IsRequired(false);
+
         b.OwnsOne(u => u.ShippingAddress, a =>
         {
             a.Property(x => x.Street).HasMaxLength(200).HasColumnName("Address_Street");

@@ -56,15 +56,38 @@ public sealed class AuthService
         var user = await _users.FindByEmailAsync(req.Email, ct);
 
         var hashToVerify = user?.PasswordHash?.Value ?? _hasher.Hash("dummy-to-prevent-timing-leak");
+
+
+        if (user == null)
+        {
+            _logger.LogWarning("Failed login attempt. EmailHash: {Hash}",
+                HashEmail(req.Email));
+            throw new UnauthorizedException("Invalid credentials.");
+        }
+
         var passwordValid = _hasher.Verify(hashToVerify, req.Password);
 
-        if (user is null || !passwordValid)
+        if ( user.IsLockedOut)
+        {
+            _logger.LogWarning("Locked out login attempt. EmailHash: {Hash}",
+                HashEmail(req.Email));
+            throw new UnauthorizedException("Invalid Credentials");
+        }
+
+        if (!passwordValid)
         {
             _logger.LogWarning("Failed login attempt. EmailHash: {Hash}",
                 HashEmail(req.Email));
 
+            user.RegisterFailedLogin();
+
+            await _users.SaveChangesAsync(ct);
+
             throw new UnauthorizedException("Invalid credentials.");
         }
+
+        user.ResetLoginAttempts();
+        await _users.SaveChangesAsync(ct);
 
         var session = Session.Create(user.Id, user.Role);
         await _sessions.AddAsync(session, ct);

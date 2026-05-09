@@ -1,9 +1,10 @@
 
+using Microsoft.AspNetCore.Identity;
 using TeaShop.Application;
 using TeaShop.Infrastructure;
 using TeaShop.Infrastructure.Data;
-using TeaShop.Infrastructure.Persistence.Seed;
 using TeaShop.Infrastructure.Middleware;
+using TeaShop.Infrastructure.Persistence.Seed;
 using TeaShop.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+
 
 builder.Services.AddTeaShopRateLimiting();
 builder.Services.AddAuthentication(options =>
@@ -38,6 +40,14 @@ builder.Services.AddAuthorization(opts =>
         p.RequireAuthenticatedUser()
          .RequireRole("ADMIN"));
 });
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5); 
+    options.Lockout.MaxFailedAccessAttempts = 5; 
+    options.Lockout.AllowedForNewUsers = true; 
+});
+
 builder.Services.AddScoped<AdminSeeder>();
 
 

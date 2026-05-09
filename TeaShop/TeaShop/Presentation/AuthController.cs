@@ -34,6 +34,8 @@ public sealed class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
+    [EnableRateLimiting(RateLimiting.GeneralPolicy)]
+
     public async Task<IActionResult> Logout(CancellationToken ct)
     {
         if (HttpContext.Items["SessionId"] is not Guid sessionId)

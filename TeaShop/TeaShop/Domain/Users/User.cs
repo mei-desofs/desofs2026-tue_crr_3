@@ -11,6 +11,8 @@ public sealed class User
     public string Role { get; private set; } = null!;
     public Address? ShippingAddress { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public int AccessFailedCount { get; private set; }
+    public DateTime? LockoutEnd { get; private set; }
 
     private User() { }
 
@@ -59,5 +61,22 @@ public sealed class User
     {
 
         PasswordHash = newPasswordHash;
+    }
+
+    public bool IsLockedOut => LockoutEnd > DateTime.UtcNow;
+
+    public void RegisterFailedLogin()
+    {
+        AccessFailedCount++;
+        if (AccessFailedCount >= 5)
+        {
+            LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+        }
+    }
+
+    public void ResetLoginAttempts()
+    {
+        AccessFailedCount = 0;
+        LockoutEnd = null;
     }
 }
