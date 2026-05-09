@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TeaShop.Domain.IAM;
 using TeaShop.Domain.Users;
 
 namespace TeaShop.Infrastructure.Data.Configurations;
@@ -20,8 +21,11 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         b.HasIndex(u => u.Email).IsUnique();
 
         b.Property(u => u.PasswordHash)
-         .HasMaxLength(512)
-         .IsRequired();
+     .HasConversion(
+         hash => hash.Value,            
+         raw => new PasswordHash(raw))  
+     .HasMaxLength(512)
+     .IsRequired();
 
         b.Property(u => u.Role)
          .HasMaxLength(20)
