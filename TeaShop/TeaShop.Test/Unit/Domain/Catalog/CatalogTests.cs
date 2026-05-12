@@ -93,7 +93,7 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
             categoryId = Guid.NewGuid()
         };
 
-        var content = new StringContent(
+        using var content = new StringContent(
             JsonSerializer.Serialize(request),
             Encoding.UTF8,
             "application/json");
@@ -113,7 +113,7 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
            categoryId = Guid.NewGuid()
        };
 
-        var content = new StringContent(
+        using var content = new StringContent(
             JsonSerializer.Serialize(request),
             Encoding.UTF8,
             "application/json");
