@@ -41,7 +41,7 @@ public sealed class CatalogService
     }
     public async Task<List<TeaDto>> GetAllAsync(Guid? categoryId, CancellationToken ct)
     {
-        var teas = await _teaRepository.GetAllAsync(ct);
+        var teas = await _teaRepository.GetAllAsync(ct) ?? new List<Tea>();
 
         if (categoryId.HasValue)
         {

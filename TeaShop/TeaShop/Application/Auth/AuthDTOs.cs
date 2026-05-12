@@ -19,3 +19,4 @@ public sealed record UpdateAddressRequest(
     [Required] string PostalCode,
     [Required] string Country
 );
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword);

@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 using TeaShop.Application.Auth;
-using TeaShop.Infrastructure.RateLimiting;
+using TeaShop.Domain.Exceptions;
+using TeaShop.Infrastructure.Security;
 
 namespace TeaShop.Presentation.Controllers;
 
@@ -32,6 +34,8 @@ public sealed class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
+    [EnableRateLimiting(RateLimiting.GeneralPolicy)]
+
     public async Task<IActionResult> Logout(CancellationToken ct)
     {
         if (HttpContext.Items["SessionId"] is not Guid sessionId)
@@ -39,5 +43,18 @@ public sealed class AuthController : ControllerBase
 
         await _authService.LogoutAsync(sessionId, ct);
         return NoContent();
+    }
+
+    [HttpPost("change-password")]
+    [Authorize]
+    [EnableRateLimiting(RateLimiting.AuthPolicy)]
+
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest req, CancellationToken ct)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? throw new UnauthorizedException("User not identified.");
+
+        await _authService.ChangePasswordAsync(Guid.Parse(userId), req, ct);
+        return NoContent(); 
     }
 }

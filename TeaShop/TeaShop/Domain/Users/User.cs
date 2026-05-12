@@ -1,4 +1,5 @@
 using TeaShop.Domain.Exceptions;
+using TeaShop.Domain.IAM;
 
 namespace TeaShop.Domain.Users;
 
@@ -6,10 +7,12 @@ public sealed class User
 {
     public Guid Id { get; private set; }
     public Email Email { get; private set; } = null!;
-    public string PasswordHash { get; private set; } = null!;
+    public PasswordHash PasswordHash { get; private set; } = null!;
     public string Role { get; private set; } = null!;
     public Address? ShippingAddress { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public int AccessFailedCount { get; private set; }
+    public DateTime? LockoutEnd { get; private set; }
 
     private User() { }
 
@@ -22,7 +25,7 @@ public sealed class User
         {
             Id = Guid.NewGuid(),
             Email = Email.Create(rawEmail),
-            PasswordHash = passwordHash,
+            PasswordHash = new PasswordHash(passwordHash),
             Role = Roles.Customer
         };
     }
@@ -39,7 +42,7 @@ public sealed class User
         {
             Id = Guid.NewGuid(),
             Email = Email.Create(rawEmail),
-            PasswordHash = passwordHash,
+            PasswordHash = new PasswordHash(passwordHash),
             Role = role
         };
     }
@@ -54,11 +57,26 @@ public sealed class User
         ShippingAddress = null;
     }
 
-    public void UpdatePassword(string newPasswordHash)
+    public void UpdatePassword(PasswordHash newPasswordHash)
     {
-        if (string.IsNullOrWhiteSpace(newPasswordHash))
-            throw new DomainException(FailureMessages.User.PasswordHashEmpty);
 
         PasswordHash = newPasswordHash;
+    }
+
+    public bool IsLockedOut => LockoutEnd > DateTime.UtcNow;
+
+    public void RegisterFailedLogin()
+    {
+        AccessFailedCount++;
+        if (AccessFailedCount >= 5)
+        {
+            LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+        }
+    }
+
+    public void ResetLoginAttempts()
+    {
+        AccessFailedCount = 0;
+        LockoutEnd = null;
     }
 }
