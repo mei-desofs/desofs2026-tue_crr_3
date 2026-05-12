@@ -40,7 +40,7 @@ public sealed class CatalogController : ControllerBase
         }
     }
     [HttpPost]
-    [Authorize(Roles = "ADMIN,MANAGER")]
+    [Authorize(Policy = "ManagerOrAbove")]
     public async Task<IActionResult> Create(
         [FromBody] CreateTeaRequestDto request,
         CancellationToken ct)
@@ -49,7 +49,7 @@ public sealed class CatalogController : ControllerBase
         return Created($"/api/catalog/{result.Id}", result);
     }
     [HttpPut("{id}")]
-    [Authorize(Roles = "ADMIN,MANAGER")]
+    [Authorize(Policy = "ManagerOrAbove")]
     public async Task<IActionResult> Update(
         Guid id,
         [FromBody] UpdateTeaRequestDto request,
@@ -64,10 +64,10 @@ public sealed class CatalogController : ControllerBase
         {
             return NotFound();
         }
-
     }
+
     [HttpDelete("{id}")]
-    [Authorize(Roles = "ADMIN,MANAGER")]
+    [Authorize(Policy = "ManagerOrAbove")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         try
