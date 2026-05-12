@@ -23,7 +23,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -42,10 +41,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          ORG_KEY: ${{ secrets.SONAR_ORG_KEY }}
         run: |
-          dotnet-sonarscanner begin /k:"$ORG_KEY" \
-            /d:sonar.login="$SONAR_TOKEN" \
+          dotnet-sonarscanner begin \
+            /k:"mei-desofs-1_tue-crr-3" \
+            /o:"mei-desofs-1" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io"
 
       - name: Restore
@@ -57,8 +57,7 @@ jobs:
       - name: Test
         run: dotnet test TeaShop.slnx --no-build
 
-      # 5. Finalize the analysis and upload to Sonar (The "End" step)
       - name: Sonar End
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+        run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
