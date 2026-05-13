@@ -1,0 +1,82 @@
+name: Security
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+
+  dependency-review:
+    name: Dependency Review software compostion analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: TeaShop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install CycloneDX
+        run: dotnet tool install --global CycloneDX
+
+      - name: Generate SBOM
+        run: dotnet-CycloneDX TeaShop.slnx -o sbom --output-format Json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: TeaShop/sbom/
+
+
+  dynamic_analysis:
+      name:  OWASP ZAP Scan
+      runs-on: ubuntu-latest
+      if: github.event_name == 'push'
+
+      steps:
+        - uses: actions/checkout@v4
+
+        - uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: '10.0.x'
+
+        - name: Start API in background
+          working-directory: TeaShop
+          run: |
+            dotnet run --project src/TeaShop.csproj --urls "http://localhost:8080" & sleep 20
+
+        - name: Run OWASP ZAP Baseline Scan
+          uses: zaproxy/action-baseline@v0.12.0
+          with:
+            target: 'http://localhost:8080'
+            fail_action: warn
+            artifact_name: zap-report
+
+        - name: Upload ZAP Report
+          uses: actions/upload-artifact@v4
+          if: always()
+          with:
+            name: zap-dast-report
+            path: zap-report/
