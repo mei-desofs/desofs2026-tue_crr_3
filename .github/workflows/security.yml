@@ -64,36 +64,45 @@ jobs:
 
       - name: Restore dependencies
         working-directory: TeaShop
-        run: dotnet restore
+        run: dotnet restore TeaShop/TeaShop.csproj
 
-      - name: Publish application
+      - name: Build application
         working-directory: TeaShop
-        run: dotnet publish src/TeaShop.csproj -c Release -o publish
+        run: dotnet build TeaShop/TeaShop.csproj --no-restore
+
 
       - name: Start API
         working-directory: TeaShop
         env:
           ASPNETCORE_ENVIRONMENT: CI
         run: |
-          nohup dotnet run --project src/TeaShop.csproj \
+          nohup dotnet run --project TeaShop/TeaShop.csproj \
             --urls "http://0.0.0.0:8080" \
             > app.log 2>&1 &
 
-      - name: Show logs
-        working-directory: TeaShop
-        run: cat app.log
 
       - name: Wait for API
         run: |
-          for i in {1..30}; do
+          for i in {1..40}; do
             if curl -s http://localhost:8080 > /dev/null; then
-              echo "API is up"
+              echo "API is up!"
               exit 0
             fi
-            sleep 5
+            echo "Waiting for API... ($i)"
+            sleep 3
           done
+
           echo "API failed to start"
           exit 1
+
+
+      - name: Show API logs
+        if: always()
+        working-directory: TeaShop
+        run: cat app.log || true
+
+      - name: Fix workspace permissions
+        run: chmod -R 777 ${{ github.workspace }}
 
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
@@ -101,3 +110,18 @@ jobs:
           target: 'http://localhost:8080'
           fail_action: false
           artifact_name: zap-report
+          docker_options: '--user root'
+
+      - name: Upload ZAP Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-dast-report
+          path: zap-report/
+
+      - name: Upload API logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-logs
+          path: TeaShop/app.log
