@@ -58,13 +58,19 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment() &&
+    !app.Environment.IsEnvironment("CI"))
+{
+    app.UseHttpsRedirection();
+}
+
 
 
 app.UseRateLimiter();
 
 app.UseInfrastructureMiddleware();
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

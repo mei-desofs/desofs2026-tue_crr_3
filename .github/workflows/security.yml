@@ -66,21 +66,34 @@ jobs:
         working-directory: TeaShop
         run: dotnet restore
 
-      - name: Build application
+      - name: Publish application
         working-directory: TeaShop
-        run: dotnet build --no-restore
+        run: dotnet publish src/TeaShop.csproj -c Release -o publish
 
-      - name: Start API in background
+      - name: Start API
         working-directory: TeaShop
+        env:
+          ASPNETCORE_ENVIRONMENT: CI
         run: |
-          dotnet run --project src/TeaShop.csproj --urls "http://0.0.0.0:8080" &
-          sleep 30
+          nohup dotnet run --project src/TeaShop.csproj \
+            --urls "http://0.0.0.0:8080" \
+            > app.log 2>&1 &
 
-      - name: Verify API is running
-        run: curl -I http://localhost:8080
+      - name: Show logs
+        working-directory: TeaShop
+        run: cat app.log
 
-      - name: Fix workspace permissions
-        run: chmod -R 777 ${{ github.workspace }}
+      - name: Wait for API
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 > /dev/null; then
+              echo "API is up"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "API failed to start"
+          exit 1
 
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
@@ -88,11 +101,3 @@ jobs:
           target: 'http://localhost:8080'
           fail_action: false
           artifact_name: zap-report
-          docker_options: '--user root'
-
-      - name: Upload ZAP Report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: zap-dast-report
-          path: zap-report/
