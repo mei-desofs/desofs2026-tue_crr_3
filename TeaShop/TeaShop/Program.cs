@@ -44,7 +44,7 @@ builder.Services.AddScoped<AdminSeeder>();
 var app = builder.Build();
 
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("CI"))
 {
     app.MapOpenApi();
 
@@ -56,13 +56,10 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseHsts();
-}
-
-if (!app.Environment.IsDevelopment() &&
-    !app.Environment.IsEnvironment("CI"))
-{
     app.UseHttpsRedirection();
 }
+
+
 
 
 
