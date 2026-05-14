@@ -98,11 +98,6 @@ jobs:
           exit 1
 
 
-      - name: Show API logs
-        if: always()
-        working-directory: TeaShop
-        run: cat app.log || true
-
       - name: Fix workspace permissions
         run: chmod -R 777 ${{ github.workspace }}
 
@@ -112,18 +107,5 @@ jobs:
             token: ${{ secrets.GITHUB_TOKEN }}
             target: 'http://localhost:8080/openapi/v1.json'
             format: openapi
+            artifact_name: 'zap-api-report'
             fail_action: false
-
-      - name: Upload ZAP Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-dast-report
-          path: zap-report/
-
-      - name: Upload API logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-logs
-          path: TeaShop/app.log
