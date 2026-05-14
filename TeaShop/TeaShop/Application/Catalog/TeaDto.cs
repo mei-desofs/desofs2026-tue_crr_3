@@ -7,4 +7,7 @@ public sealed record TeaDto(
     int Stock
 );
 
-public sealed record AdjustStockRequest(int QuantityChange);
+public sealed record AdjustStockRequest
+{
+    public required int QuantityChange { get; init; }
+}

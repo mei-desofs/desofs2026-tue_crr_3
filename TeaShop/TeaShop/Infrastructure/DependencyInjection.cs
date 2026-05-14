@@ -5,6 +5,7 @@ using TeaShop.Infrastructure.Persistence.Repositories;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 using TeaShop.Infrastructure.Security;
 using AtleX.HaveIBeenPwned;
+using TeaShop.Domain.IAM;
 
 namespace TeaShop.Infrastructure;
 

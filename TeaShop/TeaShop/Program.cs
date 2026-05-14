@@ -89,4 +89,4 @@ using (var scope = app.Services.CreateScope())
     await seeder.SeedAsync(CancellationToken.None);
 }
 
-app.Run();
+await app.RunAsync();
