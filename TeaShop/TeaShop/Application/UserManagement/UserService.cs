@@ -107,7 +107,7 @@ public sealed class UserService
                 "Staff account created. NewUserId: {NewUserId}, Role: {Role}",
                 user.Id, sanitizedRoleForLog);
 
-            return new StaffCreatedResponse(user.Id, user.Email.Value, user.Role);
+            return new StaffCreatedResponse(user.Id, user.Email.Value, user.Role!);
         }
         catch (Exception ex) when (ex is not DomainException)
         {

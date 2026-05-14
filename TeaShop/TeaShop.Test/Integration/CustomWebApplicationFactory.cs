@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSubstitute;
 using TeaShop.Application.Auth;
+using TeaShop.Domain.IAM;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 
 namespace TeaShop.IntegrationTests;
