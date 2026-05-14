@@ -2,9 +2,9 @@ name: Security
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, CI/cd ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, CI/cd ]
   schedule:
     - cron: '0 3 * * 1'
 
