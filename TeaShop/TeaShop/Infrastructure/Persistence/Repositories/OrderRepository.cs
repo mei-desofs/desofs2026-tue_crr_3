@@ -30,4 +30,16 @@ public sealed class OrderRepository : IOrderRepository
         .OrderByDescending(o => o.CreatedAt)
         .ToListAsync(ct);
     }
+    public async Task<Order?> GetByIdAsync(Guid orderId, CancellationToken ct)
+    {
+        return await _context.Orders
+            .Include(o => o.Items)
+            .FirstOrDefaultAsync(o => o.Id == orderId, ct);
+    }
+
+    public async Task UpdateAsync(Order order, CancellationToken ct)
+    {
+        _context.Orders.Update(order);
+        await _context.SaveChangesAsync(ct);
+    }
 }
