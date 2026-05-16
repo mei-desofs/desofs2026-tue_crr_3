@@ -44,4 +44,15 @@ public sealed class Order
 
         Status = OrderStatus.Cancelled;
     }
+
+    public void UpdateStatus(OrderStatus newStatus)
+    {
+        if (Status != OrderStatus.Pending)
+            throw new DomainException("Only pending orders can have their status updated.");
+
+        if (newStatus == OrderStatus.Pending)
+            throw new DomainException("Order is already pending.");
+
+        Status = newStatus;
+    }
 }

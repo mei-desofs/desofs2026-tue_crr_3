@@ -22,3 +22,5 @@ public sealed record OrderDto(
     DateTime CreatedAt,
     List<OrderItemDto> Items
 );
+
+public sealed record UpdateOrderStatusRequest(string Status);
