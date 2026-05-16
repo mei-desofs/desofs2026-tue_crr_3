@@ -1,4 +1,7 @@
 using AtleX.HaveIBeenPwned;
+using TeaShop.Domain.IAM;
+
+namespace TeaShop.Infrastructure.Security;
 
 public sealed class PasswordPolicyChecker : IPasswordPolicyChecker
 {
