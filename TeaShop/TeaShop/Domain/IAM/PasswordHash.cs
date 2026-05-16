@@ -11,12 +11,6 @@ public sealed record PasswordHash
         if (string.IsNullOrWhiteSpace(hash))
             throw new DomainException("Password hash cannot be empty.");
 
-        if (hash.Length < 15)
-        {
-            throw new DomainException("Password must have 15 characters.");
-        }
-
-
         Value = hash;
     }
 }
