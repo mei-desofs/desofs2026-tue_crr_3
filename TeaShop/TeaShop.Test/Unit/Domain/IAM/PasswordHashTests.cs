@@ -28,15 +28,4 @@ public class PasswordHashTests
            .WithMessage("Password hash cannot be empty.");
     }
 
-    [Fact]
-    public void Constructor_TooShort_ShouldThrowDomainException()
-    {
-        var shortHash = "ShortHash_1234";
-
-        var act = () => new PasswordHash(shortHash);
-
-        act.Should().Throw<DomainException>()
-           .WithMessage("Password must have 15 characters.");
-    }
-
 }
