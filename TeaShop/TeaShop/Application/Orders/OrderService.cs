@@ -10,13 +10,16 @@ public sealed class OrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly ITeaRepository _teaRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public OrderService(
         IOrderRepository orderRepository,
-        ITeaRepository teaRepository)
+        ITeaRepository teaRepository,
+        IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _teaRepository = teaRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<OrderDto> CreateAsync(
@@ -30,44 +33,55 @@ public sealed class OrderService
         if (request.Items.Count == 0)
             throw new ArgumentException("Order must contain items");
 
-        var orderItems = new List<OrderItem>();
-
-        foreach (var item in request.Items)
+        await _unitOfWork.BeginTransactionAsync(ct);
+        try
         {
-            var tea = await _teaRepository.GetByIdAsync(item.TeaId, ct);
+            var orderItems = new List<OrderItem>();
 
-            if (tea is null)
-                throw new KeyNotFoundException("Tea not found");
+            foreach (var item in request.Items)
+            {
+                var tea = await _teaRepository.GetByIdAsync(item.TeaId, ct);
 
-            if (tea.Stock < item.Quantity)
-                throw new ArgumentException($"Insufficient stock for {tea.Name}");
+                if (tea is null)
+                    throw new KeyNotFoundException("Tea not found");
 
-            tea.UpdateStock(tea.Stock - item.Quantity);
+                if (tea.Stock < item.Quantity)
+                    throw new ArgumentException($"Insufficient stock for {tea.Name}");
 
-            await _teaRepository.UpdateAsync(tea, ct);
+                tea.UpdateStock(tea.Stock - item.Quantity);
 
-            orderItems.Add(OrderItem.Create(
-                tea.Id,
-                item.Quantity,
-                tea.Price
-            ));
+                await _teaRepository.UpdateAsync(tea, ct);
+
+                orderItems.Add(OrderItem.Create(
+                    tea.Id,
+                    item.Quantity,
+                    tea.Price
+                ));
+            }
+
+            var order = Order.Create(userId, orderItems);
+
+            await _orderRepository.AddAsync(order, ct);
+
+            await _unitOfWork.CommitAsync(ct);
+
+            return new OrderDto(
+                order.Id,
+                order.UserId,
+                order.Status.ToString(),
+                order.CreatedAt,
+                order.Items.Select(i => new OrderItemDto(
+                    i.TeaId,
+                    i.Quantity,
+                    i.UnitPrice
+                )).ToList()
+            );
         }
-
-        var order = Order.Create(userId, orderItems);
-
-        await _orderRepository.AddAsync(order, ct);
-
-        return new OrderDto(
-            order.Id,
-            order.UserId,
-            order.Status.ToString(),
-            order.CreatedAt,
-            order.Items.Select(i => new OrderItemDto(
-                i.TeaId,
-                i.Quantity,
-                i.UnitPrice
-            )).ToList()
-        );
+        catch
+        {
+            await _unitOfWork.RollbackAsync(ct);
+            throw;
+        }
     }
     
     public async Task<List<OrderDto>> GetMyOrdersAsync(
