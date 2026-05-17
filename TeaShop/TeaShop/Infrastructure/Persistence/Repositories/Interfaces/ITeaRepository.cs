@@ -9,5 +9,6 @@ public interface ITeaRepository
     Task AddAsync(Tea tea, CancellationToken ct);
     void Remove(Tea tea);
     Task SaveChangesAsync(CancellationToken ct);
+    Task UpdateAsync(Tea tea, CancellationToken ct);
 
 }

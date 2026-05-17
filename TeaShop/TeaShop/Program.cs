@@ -84,6 +84,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+/*
 using (var scope = app.Services.CreateScope())
 {
     scope.ServiceProvider.GetRequiredService<TeaShopDbContext>();
@@ -91,5 +92,6 @@ using (var scope = app.Services.CreateScope())
     var seeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
     await seeder.SeedAsync(CancellationToken.None);
 }
+*/
 
 await app.RunAsync();

@@ -32,6 +32,25 @@ public sealed class Tea
             CategoryId = categoryId
         };
     }
+    public void Update(string name, decimal price, int stock, Guid categoryId)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("Tea name is required.");
+
+        if (price <= 0)
+            throw new DomainException("Price must be greater than zero.");
+
+        if (stock < 0)
+            throw new DomainException("Stock cannot be negative.");
+
+        if (categoryId == Guid.Empty)
+            throw new DomainException("Category is required.");
+
+        Name = name.Trim();
+        Price = price;
+        Stock = stock;
+        CategoryId = categoryId;
+    }
 
     public void UpdateStock(int newStock)
     {

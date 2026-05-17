@@ -10,12 +10,9 @@ using NSubstitute;
 using System.Net;
 using TeaShop.Domain.Catalog;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
-<<<<<<< HEAD:TeaShop/TeaShop.Test/Unit/Domain/Catalog/CatalogTests.cs
 using System.Text;
 using System.Text.Json;
-=======
 using TeaShop.IntegrationTests;
->>>>>>> 578d7ccae7cb1ae05fe6fe3b1d8ffc8da4152c8a:TeaShop/TeaShop.Test/Integration/CatalogTests.cs
 using Xunit;
 
 namespace TeaShop.Test.Integration;

@@ -1,4 +1,4 @@
-git using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using TeaShop.Domain.Users;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 using TeaShop.Infrastructure.Security;
@@ -26,6 +26,7 @@ public sealed class AdminSeeder
 
     public async Task SeedAsync(CancellationToken ct)
     {
+
         var email = _config["Seed:AdminEmail"];
         var password = _config["Seed:AdminPassword"];
 
