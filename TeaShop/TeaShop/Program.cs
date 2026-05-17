@@ -56,6 +56,8 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("CI"))
 {
+    app.UseDeveloperExceptionPage();
+
     app.MapOpenApi();
 
     app.UseSwaggerUI(options =>
@@ -65,6 +67,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("CI"))
 }
 else
 {
+    app.UseMiddleware<GenericExceptionMiddleware>();
     app.UseHsts();
     app.UseHttpsRedirection();
 }
