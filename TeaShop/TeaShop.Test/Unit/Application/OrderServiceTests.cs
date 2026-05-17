@@ -246,4 +246,46 @@ public class OrderServiceTests
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }
+
+    [Fact]
+    public async Task CancelAsync_ValidRequest_ShouldReturnCancelledOrderDto()
+    {
+        var userId = Guid.NewGuid();
+        var teaId = Guid.NewGuid();
+        var item = OrderItem.Create(teaId, 2, 9.99m);
+        var order = Order.Create(userId, [item]);
+
+        _orderRepository.GetByIdAsync(order.Id, CancellationToken.None).Returns(order);
+
+        var result = await _sut.CancelAsync(userId, order.Id, CancellationToken.None);
+
+        result.Id.Should().Be(order.Id);
+        result.UserId.Should().Be(userId);
+        result.Status.Should().Be("Cancelled"); 
+        result.Items.Should().HaveCount(1);
+        result.Items[0].TeaId.Should().Be(teaId);
+        result.Items[0].Quantity.Should().Be(2);
+    }
+
+
+    [Fact]
+    public async Task CancelAsync_EmptyUserId_ShouldThrowArgumentException()
+    {
+        var act = async () => await _sut.CancelAsync(Guid.Empty, Guid.NewGuid(), CancellationToken.None);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*Invalid user id*");
+        await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CancelAsync_EmptyOrderId_ShouldThrowArgumentException()
+    {
+        var act = async () => await _sut.CancelAsync(Guid.NewGuid(), Guid.Empty, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*Invalid order id*");
+        await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+    }
+
 }
