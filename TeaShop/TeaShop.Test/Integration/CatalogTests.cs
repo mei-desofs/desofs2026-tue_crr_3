@@ -40,8 +40,7 @@ public class CatalogTests : IClassFixture<CustomWebApplicationFactory>
         if (response.StatusCode == HttpStatusCode.InternalServerError)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            // Set a breakpoint here. The 'errorContent' string will 
-            // contain the full Stack Trace of the crash.
+       
             throw new Exception($"Server crashed! Error: {errorContent}");
         }
 

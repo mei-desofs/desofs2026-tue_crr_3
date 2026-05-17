@@ -186,4 +186,64 @@ public class OrderServiceTests
 
         await act.Should().ThrowAsync<ArgumentException>();
     }
+
+    
+
+    [Fact]
+    public async Task GetAllOrdersAsync_ShouldReturnAllOrders()
+    {
+        var userId = Guid.NewGuid();
+        var teaId = Guid.NewGuid();
+        var item = OrderItem.Create(teaId, 1, 10.0m);
+        var orders = new List<Order> { Order.Create(userId, [item]) };
+        
+        
+        _orderRepository.GetAllAsync(CancellationToken.None).Returns(orders);
+
+        var result = await _sut.GetAllOrdersAsync(CancellationToken.None);
+
+        result.Should().HaveCount(1);
+    }
+
+   
+
+    [Fact]
+  
+    public async Task UpdateOrderStatusAsync_ValidStatus_ShouldUpdateStatus()
+    {
+        var userId = Guid.NewGuid();
+        var item = OrderItem.Create(Guid.NewGuid(), 1, 9.99m);
+        var order = Order.Create(userId, [item]);
+
+        var request = new UpdateOrderStatusRequest("Completed");
+
+        _orderRepository.GetByIdAsync(order.Id, CancellationToken.None).Returns(order);
+
+        var result = await _sut.UpdateOrderStatusAsync(order.Id, request, CancellationToken.None);
+
+        result.Status.Should().Be("Completed");
+        await _orderRepository.Received(1).UpdateAsync(order, CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task UpdateOrderStatusAsync_InvalidStatus_ShouldThrowArgumentException()
+    {
+        var request = new UpdateOrderStatusRequest("NotAValidStatus");
+
+        var act = async () => await _sut.UpdateOrderStatusAsync(Guid.NewGuid(), request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*Invalid status*");
+    }
+
+    [Fact]
+    public async Task UpdateOrderStatusAsync_OrderNotFound_ShouldThrowKeyNotFoundException()
+    {
+        var request = new UpdateOrderStatusRequest("Completed");
+        _orderRepository.GetByIdAsync(Arg.Any<Guid>(), CancellationToken.None).Returns((Order?)null);
+
+        var act = async () => await _sut.UpdateOrderStatusAsync(Guid.NewGuid(), request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
 }
