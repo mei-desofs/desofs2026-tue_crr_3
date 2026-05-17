@@ -15,7 +15,7 @@ public sealed class CatalogService
 
     public async Task<List<TeaDto>> GetAllAsync(CancellationToken ct)
     {
-        var teas = await _teaRepository.GetAllAsync(ct);
+        var teas = await _teaRepository.GetAllAsync(ct) ?? [];
 
         return teas.Select(t => new TeaDto(
             t.Id,
@@ -39,13 +39,15 @@ public sealed class CatalogService
             tea.Stock
         );
     }
+
     public async Task<List<TeaDto>> GetAllAsync(Guid? categoryId, CancellationToken ct)
     {
-        var teas = await _teaRepository.GetAllAsync(ct) ?? new List<Tea>();
+        var teas = await _teaRepository.GetAllAsync(ct) ?? [];
 
         if (categoryId.HasValue)
         {
             var categoryIdValue = categoryId.Value;
+
             teas = teas
                 .Where(t => t.CategoryId == categoryIdValue)
                 .ToList();
@@ -59,20 +61,16 @@ public sealed class CatalogService
         )).ToList();
     }
 
-    public async Task<TeaDto> AdjustStockAsync(Guid id, AdjustStockRequest request, CancellationToken ct)
+    public async Task<TeaDto> CreateAsync(CreateTeaRequestDto request, CancellationToken ct)
     {
-        if (id == Guid.Empty)
-            throw new ArgumentException("Invalid tea id");
+        var tea = Tea.Create(
+            request.Name,
+            request.Price,
+            request.Stock,
+            request.CategoryId
+        );
 
-
-        var tea = await _teaRepository.GetByIdAsync(id, ct);
-
-        if (tea is null)
-            throw new KeyNotFoundException("Tea not found");
-
-        tea.AdjustStock(request.QuantityChange);
-
-        await _teaRepository.UpdateAsync(tea, ct);
+        await _teaRepository.AddAsync(tea, ct);
 
         return new TeaDto(
             tea.Id,
@@ -80,5 +78,40 @@ public sealed class CatalogService
             tea.Price,
             tea.Stock
         );
+    }
+
+    public async Task<TeaDto> UpdateAsync(Guid id, UpdateTeaRequestDto request, CancellationToken ct)
+    {
+        var tea = await _teaRepository.GetByIdAsync(id, ct);
+
+        if (tea is null)
+            throw new KeyNotFoundException("Tea not found.");
+
+        tea.Update(
+            request.Name,
+            request.Price,
+            request.Stock,
+            request.CategoryId
+        );
+
+        await _teaRepository.SaveChangesAsync(ct);
+
+        return new TeaDto(
+            tea.Id,
+            tea.Name,
+            tea.Price,
+            tea.Stock
+        );
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken ct)
+    {
+        var tea = await _teaRepository.GetByIdAsync(id, ct);
+
+        if (tea is null)
+            throw new KeyNotFoundException("Tea not found.");
+
+        _teaRepository.Remove(tea);
+        await _teaRepository.SaveChangesAsync(ct);
     }
 }

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeaShop.Application.Catalog;
-using TeaShop.Application.Catalog.DTOs;
 
 namespace TeaShop.Presentation.Controllers;
 
@@ -40,22 +39,41 @@ public sealed class CatalogController : ControllerBase
             return NotFound();
         }
     }
-
-    [HttpPatch("{id}/stock")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> AdjustStock(
+    [HttpPost]
+    [Authorize(Policy = "ManagerOrAbove")]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateTeaRequestDto request,
+        CancellationToken ct)
+    {
+        var result = await _service.CreateAsync(request, ct);
+        return Created($"/api/catalog/{result.Id}", result);
+    }
+    [HttpPut("{id}")]
+    [Authorize(Policy = "ManagerOrAbove")]
+    public async Task<IActionResult> Update(
         Guid id,
-        [FromBody] AdjustStockRequest request,
+        [FromBody] UpdateTeaRequestDto request,
         CancellationToken ct)
     {
         try
         {
-            var result = await _service.AdjustStockAsync(id, request, ct);
+            var result = await _service.UpdateAsync(id, request, ct);
             return Ok(result);
         }
-        catch (ArgumentException ex)
+        catch (KeyNotFoundException)
         {
-            return BadRequest(new { message = ex.Message });
+            return NotFound();
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Policy = "ManagerOrAbove")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            await _service.DeleteAsync(id, ct);
+            return NoContent();
         }
         catch (KeyNotFoundException)
         {

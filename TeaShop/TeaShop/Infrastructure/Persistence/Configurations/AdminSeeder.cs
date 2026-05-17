@@ -26,6 +26,7 @@ public sealed class AdminSeeder
 
     public async Task SeedAsync(CancellationToken ct)
     {
+
         var email = _config["Seed:AdminEmail"];
         var password = _config["Seed:AdminPassword"];
 
