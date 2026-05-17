@@ -94,7 +94,7 @@ public class CatalogTests : IClassFixture<CustomWebApplicationFactory>
             categoryId = Guid.NewGuid()
         };
 
-        var content = new StringContent(
+        using var content = new StringContent(
             JsonSerializer.Serialize(request),
             Encoding.UTF8,
             "application/json");
