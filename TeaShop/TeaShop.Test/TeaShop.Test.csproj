@@ -22,8 +22,4 @@
     <ProjectReference Include="..\TeaShop\TeaShop.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Unit\Domain\Catalog\" />
-  </ItemGroup>
-
 </Project>
