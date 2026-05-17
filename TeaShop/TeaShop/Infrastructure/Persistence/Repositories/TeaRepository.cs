@@ -37,5 +37,9 @@ public sealed class TeaRepository : ITeaRepository
     {
         _context.Teas.Remove(tea);
     }
-
+    public async Task UpdateAsync(Tea tea, CancellationToken ct)
+        {
+        _context.Teas.Update(tea);
+        await _context.SaveChangesAsync(ct);
+        }
 }

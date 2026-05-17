@@ -1,43 +1,39 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
+
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
+using System.Net;
 using TeaShop.Domain.Catalog;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
+<<<<<<< HEAD:TeaShop/TeaShop.Test/Unit/Domain/Catalog/CatalogTests.cs
 using System.Text;
 using System.Text.Json;
+=======
+using TeaShop.IntegrationTests;
+>>>>>>> 578d7ccae7cb1ae05fe6fe3b1d8ffc8da4152c8a:TeaShop/TeaShop.Test/Integration/CatalogTests.cs
 using Xunit;
 
-namespace TeaShop.Test;
+namespace TeaShop.Test.Integration;
 
-public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
+public class CatalogTests : IClassFixture<CustomWebApplicationFactory>
 {
+
     private readonly HttpClient _client;
+    private readonly CustomWebApplicationFactory _factory;
 
-    public CatalogTests(WebApplicationFactory<Program> factory)
+    public CatalogTests(CustomWebApplicationFactory factory)
     {
-        var teaRepository = Substitute.For<ITeaRepository>();
-
-        teaRepository
-            .GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns(new List<Tea>());
-
-        teaRepository
-            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns((Tea?)null);
-
+        _factory = factory;
         _client = factory.WithWebHostBuilder(builder =>
         {
-            builder.ConfigureTestServices(services =>
+            builder.ConfigureLogging(logging =>
             {
-                services.RemoveAll<ITeaRepository>();
-                services.AddSingleton(teaRepository);
+                logging.AddConsole();
             });
         }).CreateClient();
     }
@@ -46,10 +42,18 @@ public class CatalogTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetAll_ShouldReturn200_AndList()
     {
         var response = await _client.GetAsync("/api/catalog");
+        if (response.StatusCode == HttpStatusCode.InternalServerError)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+       
+            throw new Exception($"Server crashed! Error: {errorContent}");
+        }
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await response.Content.ReadAsStringAsync();
+      
+
         content.Should().NotBeNull();
     }
 

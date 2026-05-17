@@ -6,3 +6,8 @@ public sealed record TeaDto(
     decimal Price,
     int Stock
 );
+
+public sealed record AdjustStockRequest
+{
+    public required int QuantityChange { get; init; }
+}

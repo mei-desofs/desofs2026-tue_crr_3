@@ -4,10 +4,14 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+	  <LangVersion>latest</LangVersion>
     <UserSecretsId>fdf3c589-7619-4373-8a6d-0d7dd1e4282d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AtleX.HaveIBeenPwned" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
@@ -27,7 +31,6 @@
 
   <ItemGroup>
     <Folder Include="Application\UserManagement\" />
-    <Folder Include="Domain\IAM\" />
     <Folder Include="Presentation\" />
   </ItemGroup>
 

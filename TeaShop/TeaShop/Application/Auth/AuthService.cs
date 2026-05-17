@@ -13,17 +13,20 @@ public sealed class AuthService
     private readonly IUserRepository _users;
     private readonly ISessionRepository _sessions;
     private readonly PasswordHashingService _hasher;
+    private readonly IPasswordPolicyChecker _policyChecker;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IUserRepository users,
         ISessionRepository sessions,
         PasswordHashingService hasher,
+        IPasswordPolicyChecker policyChecker,
         ILogger<AuthService> logger)
     {
         _users = users;
         _sessions = sessions;
         _hasher = hasher;
+        _policyChecker = policyChecker;
         _logger = logger;
     }
 
@@ -31,8 +34,9 @@ public sealed class AuthService
     {
         if (await _users.ExistsByEmailAsync(req.Email, ct))
             throw new ConflictException("Registration could not be completed email already in use.");
-
-  
+       
+        if (!await _policyChecker.IsValidAsync(req.Password))
+            throw new DomainException("Password does not meet security policies.");
 
         var user = User.CreateCustomer(req.Email, _hasher.Hash(req.Password));
         await _users.AddAsync(user, ct);
@@ -44,23 +48,46 @@ public sealed class AuthService
         _logger.LogInformation("User registered. EmailHash: {Hash}",
             HashEmail(req.Email));
 
-        return new AuthResponse(session.Token.Value, session.ExpiresAt, user.Role);
+        return new AuthResponse(session.TokenHash, session.ExpiresAt, user.Role);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest req, CancellationToken ct)
     {
         var user = await _users.FindByEmailAsync(req.Email, ct);
 
-        var hashToVerify = user?.PasswordHash ?? _hasher.Hash("dummy-to-prevent-timing-leak");
+        var hashToVerify = user?.PasswordHash?.Value ?? _hasher.Hash("dummy-to-prevent-timing-leak");
+
+
+        if (user == null)
+        {
+            _logger.LogWarning("Failed login attempt. EmailHash: {Hash}",
+                HashEmail(req.Email));
+            throw new UnauthorizedException("Invalid credentials.");
+        }
+
         var passwordValid = _hasher.Verify(hashToVerify, req.Password);
 
-        if (user is null || !passwordValid)
+        if ( user.IsLockedOut)
+        {
+            _logger.LogWarning("Locked out login attempt. EmailHash: {Hash}",
+                HashEmail(req.Email));
+            throw new UnauthorizedException("Invalid Credentials");
+        }
+
+        if (!passwordValid)
         {
             _logger.LogWarning("Failed login attempt. EmailHash: {Hash}",
                 HashEmail(req.Email));
 
+            user.RegisterFailedLogin();
+
+            await _users.SaveChangesAsync(ct);
+
             throw new UnauthorizedException("Invalid credentials.");
         }
+
+        user.ResetLoginAttempts();
+        await _users.SaveChangesAsync(ct);
 
         var session = Session.Create(user.Id, user.Role);
         await _sessions.AddAsync(session, ct);
@@ -68,7 +95,7 @@ public sealed class AuthService
 
         _logger.LogInformation("Successful login. UserId: {UserId}", user.Id);
 
-        return new AuthResponse(session.Token.Value, session.ExpiresAt, user.Role);
+        return new AuthResponse(session.TokenHash, session.ExpiresAt, user.Role);
     }
 
     public async Task LogoutAsync(Guid sessionId, CancellationToken ct)
@@ -80,6 +107,27 @@ public sealed class AuthService
         await _sessions.SaveChangesAsync(ct);
 
         _logger.LogInformation("Session revoked. SessionId: {SessionId}", sessionId);
+    }
+
+    public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest req, CancellationToken ct)
+    {
+        var user = await _users.FindByIdAsync(userId, ct)
+            ?? throw new NotFoundException("User not found.");
+
+        var isCurrentPasswordValid = _hasher.Verify(user.PasswordHash.Value, req.CurrentPassword);
+        if (!isCurrentPasswordValid)
+            throw new UnauthorizedException("Current password is incorrect.");
+
+        var validationResult = await _policyChecker.IsValidAsync(req.NewPassword);
+        if (!validationResult)
+            throw new DomainException("New password does not meet security policies.");
+
+        var newHash = _hasher.Hash(req.NewPassword);
+        user.UpdatePassword(new PasswordHash(newHash));
+
+        await _users.SaveChangesAsync(ct);
+
+        _logger.LogInformation("Password changed for UserId: {UserId}", userId);
     }
 
 

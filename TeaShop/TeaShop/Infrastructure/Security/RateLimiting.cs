@@ -2,7 +2,7 @@ using System.Threading.RateLimiting;
 
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace TeaShop.Infrastructure.RateLimiting;
+namespace TeaShop.Infrastructure.Security;
 
 public static class RateLimiting
 {
