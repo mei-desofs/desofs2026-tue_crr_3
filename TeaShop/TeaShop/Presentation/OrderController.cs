@@ -53,6 +53,28 @@ public sealed class OrderController : ControllerBase
         var result = await _orderService.GetMyOrdersAsync(userId, ct);
         return Ok(result);
     }
+    [HttpPatch("{id}/cancel")]
+    [Authorize]
+
+    public async Task<IActionResult> CancelOrder(Guid id, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        try
+        {
+            var result = await _orderService.CancelAsync(userId, id, ct);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
 
     [HttpGet]
     [Authorize(Roles = Roles.Admin)]

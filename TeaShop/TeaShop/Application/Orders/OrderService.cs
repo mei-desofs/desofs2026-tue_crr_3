@@ -138,4 +138,36 @@ public sealed class OrderService
             )).ToList()
         );
     }
+    public async Task<OrderDto> CancelAsync(
+    Guid userId,
+    Guid orderId,
+    CancellationToken ct)
+    {
+        if (userId == Guid.Empty)
+            throw new ArgumentException("Invalid user id");
+
+        if (orderId == Guid.Empty)
+            throw new ArgumentException("Invalid order id");
+
+        var order = await _orderRepository.GetByIdAsync(orderId, ct);
+
+        if (order is null)
+            throw new KeyNotFoundException("Order not found");
+
+        order.Cancel(userId);
+
+        await _orderRepository.UpdateAsync(order, ct);
+
+        return new OrderDto(
+            order.Id,
+            order.UserId,
+            order.Status.ToString(),
+            order.CreatedAt,
+            order.Items.Select(i => new OrderItemDto(
+                i.TeaId,
+                i.Quantity,
+                i.UnitPrice
+            )).ToList()
+        );
+    }
 }
