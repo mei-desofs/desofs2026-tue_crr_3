@@ -3,7 +3,7 @@ namespace TeaShop.Application.UserManagement;
 
 public sealed record CreateStaffRequest(
     [Required, EmailAddress] string Email,
-    [Required, MinLength(8), MaxLength(128)] string Password,
+    [Required, MinLength(15), MaxLength(128)] string Password,
     [Required] string Role
 );
 

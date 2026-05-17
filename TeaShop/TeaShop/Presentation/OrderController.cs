@@ -84,7 +84,7 @@ public sealed class OrderController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("{orderId}/status")]
+    [HttpPut("{id}/status")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> UpdateOrderStatus(
         Guid id,

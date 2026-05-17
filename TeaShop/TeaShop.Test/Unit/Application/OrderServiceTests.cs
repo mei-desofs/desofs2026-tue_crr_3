@@ -3,6 +3,7 @@ using NSubstitute;
 using TeaShop.Application.Orders;
 using TeaShop.Application.Orders.DTOs;
 using TeaShop.Domain.Catalog;
+using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Orders;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 using Xunit;
@@ -13,11 +14,12 @@ public class OrderServiceTests
 {
     private readonly IOrderRepository _orderRepository = Substitute.For<IOrderRepository>();
     private readonly ITeaRepository _teaRepository = Substitute.For<ITeaRepository>();
+    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly OrderService _sut;
 
     public OrderServiceTests()
     {
-        _sut = new OrderService(_orderRepository, _teaRepository);
+        _sut = new OrderService(_orderRepository, _teaRepository, _unitOfWork);
     }
 
     private static Tea ValidTea(int stock = 10) =>
@@ -89,6 +91,20 @@ public class OrderServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_ValidRequest_ShouldBeginAndCommitTransaction()
+    {
+        var tea = ValidTea();
+        var request = new CreateOrderRequest([new CreateOrderItemRequest(tea.Id, 1)]);
+        _teaRepository.GetByIdAsync(tea.Id, CancellationToken.None).Returns(tea);
+
+        await _sut.CreateAsync(Guid.NewGuid(), request, CancellationToken.None);
+
+        await _unitOfWork.Received(1).BeginTransactionAsync(CancellationToken.None);
+        await _unitOfWork.Received(1).CommitAsync(CancellationToken.None);
+        await _unitOfWork.DidNotReceive().RollbackAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task CreateAsync_EmptyUserId_ShouldThrowArgumentException()
     {
         var request = new CreateOrderRequest([new CreateOrderItemRequest(Guid.NewGuid(), 1)]);
@@ -122,6 +138,19 @@ public class OrderServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_TeaNotFound_ShouldRollbackTransaction()
+    {
+        var request = new CreateOrderRequest([new CreateOrderItemRequest(Guid.NewGuid(), 1)]);
+        _teaRepository.GetByIdAsync(Arg.Any<Guid>(), CancellationToken.None).Returns((Tea?)null);
+
+        var act = async () => await _sut.CreateAsync(Guid.NewGuid(), request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+        await _unitOfWork.Received(1).RollbackAsync(CancellationToken.None);
+        await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task CreateAsync_InsufficientStock_ShouldThrowArgumentException()
     {
         var tea = ValidTea(stock: 2);
@@ -133,6 +162,20 @@ public class OrderServiceTests
         await act.Should().ThrowAsync<ArgumentException>()
             .WithMessage($"*{tea.Name}*");
         await _orderRepository.DidNotReceive().AddAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateAsync_InsufficientStock_ShouldRollbackTransaction()
+    {
+        var tea = ValidTea(stock: 2);
+        var request = new CreateOrderRequest([new CreateOrderItemRequest(tea.Id, 5)]);
+        _teaRepository.GetByIdAsync(tea.Id, CancellationToken.None).Returns(tea);
+
+        var act = async () => await _sut.CreateAsync(Guid.NewGuid(), request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        await _unitOfWork.Received(1).RollbackAsync(CancellationToken.None);
+        await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -169,6 +212,27 @@ public class OrderServiceTests
     }
 
     [Fact]
+    public async Task GetMyOrdersAsync_ShouldNotReturnOtherUsersOrders()
+    {
+        // The repository is queried by userId — verify isolation is enforced at the service level
+        var userId = Guid.NewGuid();
+        var otherUserId = Guid.NewGuid();
+        var tea = ValidTea();
+        var ownOrders = new List<Order>
+        {
+            Order.Create(userId, [OrderItem.Create(tea.Id, 1, tea.Price)])
+        };
+        _orderRepository.GetByUserIdAsync(userId, CancellationToken.None).Returns(ownOrders);
+        _orderRepository.GetByUserIdAsync(otherUserId, CancellationToken.None).Returns([]);
+
+        var result = await _sut.GetMyOrdersAsync(userId, CancellationToken.None);
+
+        result.Should().AllSatisfy(o => o.UserId.Should().Be(userId));
+        await _orderRepository.Received(1).GetByUserIdAsync(userId, CancellationToken.None);
+        await _orderRepository.DidNotReceive().GetByUserIdAsync(otherUserId, CancellationToken.None);
+    }
+
+    [Fact]
     public async Task GetMyOrdersAsync_NoOrders_ShouldReturnEmptyList()
     {
         var userId = Guid.NewGuid();
@@ -187,7 +251,7 @@ public class OrderServiceTests
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
-    
+    // GetAllOrdersAsync
 
     [Fact]
     public async Task GetAllOrdersAsync_ShouldReturnAllOrders()
@@ -196,8 +260,7 @@ public class OrderServiceTests
         var teaId = Guid.NewGuid();
         var item = OrderItem.Create(teaId, 1, 10.0m);
         var orders = new List<Order> { Order.Create(userId, [item]) };
-        
-        
+
         _orderRepository.GetAllAsync(CancellationToken.None).Returns(orders);
 
         var result = await _sut.GetAllOrdersAsync(CancellationToken.None);
@@ -205,10 +268,9 @@ public class OrderServiceTests
         result.Should().HaveCount(1);
     }
 
-   
+    // UpdateOrderStatusAsync
 
     [Fact]
-  
     public async Task UpdateOrderStatusAsync_ValidStatus_ShouldUpdateStatus()
     {
         var userId = Guid.NewGuid();
@@ -248,6 +310,36 @@ public class OrderServiceTests
     }
 
     [Fact]
+    public async Task UpdateOrderStatusAsync_AlreadyCompleted_ShouldThrowDomainException()
+    {
+        var item = OrderItem.Create(Guid.NewGuid(), 1, 9.99m);
+        var order = Order.Create(Guid.NewGuid(), [item]);
+        order.UpdateStatus(OrderStatus.Completed);
+        _orderRepository.GetByIdAsync(order.Id, CancellationToken.None).Returns(order);
+
+        var act = async () => await _sut.UpdateOrderStatusAsync(order.Id, new UpdateOrderStatusRequest("Cancelled"), CancellationToken.None);
+
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage("*pending*");
+        await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UpdateOrderStatusAsync_SetToPending_ShouldThrowDomainException()
+    {
+        var item = OrderItem.Create(Guid.NewGuid(), 1, 9.99m);
+        var order = Order.Create(Guid.NewGuid(), [item]);
+        _orderRepository.GetByIdAsync(order.Id, CancellationToken.None).Returns(order);
+
+        var act = async () => await _sut.UpdateOrderStatusAsync(order.Id, new UpdateOrderStatusRequest("Pending"), CancellationToken.None);
+
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage("*already pending*");
+    }
+
+    // CancelAsync
+
+    [Fact]
     public async Task CancelAsync_ValidRequest_ShouldReturnCancelledOrderDto()
     {
         var userId = Guid.NewGuid();
@@ -261,12 +353,70 @@ public class OrderServiceTests
 
         result.Id.Should().Be(order.Id);
         result.UserId.Should().Be(userId);
-        result.Status.Should().Be("Cancelled"); 
+        result.Status.Should().Be("Cancelled");
         result.Items.Should().HaveCount(1);
         result.Items[0].TeaId.Should().Be(teaId);
         result.Items[0].Quantity.Should().Be(2);
     }
 
+    [Fact]
+    public async Task CancelAsync_WrongUser_ShouldThrowDomainException()
+    {
+        var ownerId = Guid.NewGuid();
+        var attackerId = Guid.NewGuid();
+        var item = OrderItem.Create(Guid.NewGuid(), 1, 9.99m);
+        var order = Order.Create(ownerId, [item]);
+        _orderRepository.GetByIdAsync(order.Id, CancellationToken.None).Returns(order);
+
+        var act = async () => await _sut.CancelAsync(attackerId, order.Id, CancellationToken.None);
+
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage("*another user*");
+        await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CancelAsync_AlreadyCancelledOrder_ShouldThrowDomainException()
+    {
+        var userId = Guid.NewGuid();
+        var item = OrderItem.Create(Guid.NewGuid(), 1, 9.99m);
+        var order = Order.Create(userId, [item]);
+        order.Cancel(userId);
+        _orderRepository.GetByIdAsync(order.Id, CancellationToken.None).Returns(order);
+
+        var act = async () => await _sut.CancelAsync(userId, order.Id, CancellationToken.None);
+
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage("*pending*");
+        await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CancelAsync_CompletedOrder_ShouldThrowDomainException()
+    {
+        var userId = Guid.NewGuid();
+        var item = OrderItem.Create(Guid.NewGuid(), 1, 9.99m);
+        var order = Order.Create(userId, [item]);
+        order.UpdateStatus(OrderStatus.Completed);
+        _orderRepository.GetByIdAsync(order.Id, CancellationToken.None).Returns(order);
+
+        var act = async () => await _sut.CancelAsync(userId, order.Id, CancellationToken.None);
+
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage("*pending*");
+        await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CancelAsync_OrderNotFound_ShouldThrowKeyNotFoundException()
+    {
+        _orderRepository.GetByIdAsync(Arg.Any<Guid>(), CancellationToken.None).Returns((Order?)null);
+
+        var act = async () => await _sut.CancelAsync(Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+        await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+    }
 
     [Fact]
     public async Task CancelAsync_EmptyUserId_ShouldThrowArgumentException()
@@ -287,5 +437,4 @@ public class OrderServiceTests
             .WithMessage("*Invalid order id*");
         await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
     }
-
 }

@@ -4,7 +4,7 @@ namespace TeaShop.Application.Auth;
 
 public sealed record RegisterRequest(
     [Required, EmailAddress] string Email,
-    [Required, MinLength(8), MaxLength(128)] string Password
+    [Required, MinLength(15), MaxLength(128)] string Password
 );
 
 public sealed record LoginRequest(
@@ -14,9 +14,9 @@ public sealed record LoginRequest(
 
 public sealed record AuthResponse(string Token, DateTime ExpiresAt, string Role);
 public sealed record UpdateAddressRequest(
-    [Required] string Street,
-    [Required] string City,
-    [Required] string PostalCode,
-    [Required] string Country
+    [Required, MaxLength(200)] string Street,
+    [Required, MaxLength(100)] string City,
+    [Required, MaxLength(20)] string PostalCode,
+    [Required, MaxLength(100)] string Country
 );
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);

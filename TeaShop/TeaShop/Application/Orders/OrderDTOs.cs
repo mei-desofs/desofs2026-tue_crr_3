@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TeaShop.Application.Orders.DTOs;
 
 public sealed record CreateOrderItemRequest(
     Guid TeaId,
-    int Quantity
+    [Range(1, 1000)] int Quantity
 );
 
 public sealed record CreateOrderRequest(
@@ -23,4 +25,6 @@ public sealed record OrderDto(
     List<OrderItemDto> Items
 );
 
-public sealed record UpdateOrderStatusRequest(string Status);
+public sealed record UpdateOrderStatusRequest(
+    [Required] string Status
+);
