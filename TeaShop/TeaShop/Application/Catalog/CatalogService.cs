@@ -41,7 +41,7 @@ public sealed class CatalogService
     }
     public async Task<List<TeaDto>> GetAllAsync(Guid? categoryId, CancellationToken ct)
     {
-        var teas = await _teaRepository.GetAllAsync(ct);
+        var teas = await _teaRepository.GetAllAsync(ct) ?? new List<Tea>();
 
         if (categoryId.HasValue)
         {
@@ -59,28 +59,26 @@ public sealed class CatalogService
         )).ToList();
     }
 
-    public async Task<TeaDto> UpdateStockAsync(Guid id, UpdateStockRequest request, CancellationToken ct)
-{
-    if (id == Guid.Empty)
-        throw new ArgumentException("Invalid tea id");
+    public async Task<TeaDto> AdjustStockAsync(Guid id, AdjustStockRequest request, CancellationToken ct)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Invalid tea id");
 
-    if (request.Stock < 0)
-        throw new ArgumentException("Stock cannot be negative");
 
-    var tea = await _teaRepository.GetByIdAsync(id, ct);
+        var tea = await _teaRepository.GetByIdAsync(id, ct);
 
-    if (tea is null)
-        throw new KeyNotFoundException("Tea not found");
+        if (tea is null)
+            throw new KeyNotFoundException("Tea not found");
 
-    tea.UpdateStock(request.Stock);
+        tea.AdjustStock(request.QuantityChange);
 
-    await _teaRepository.UpdateAsync(tea, ct);
+        await _teaRepository.UpdateAsync(tea, ct);
 
-    return new TeaDto(
-        tea.Id,
-        tea.Name,
-        tea.Price,
-        tea.Stock
-    );
-}
+        return new TeaDto(
+            tea.Id,
+            tea.Name,
+            tea.Price,
+            tea.Stock
+        );
     }
+}

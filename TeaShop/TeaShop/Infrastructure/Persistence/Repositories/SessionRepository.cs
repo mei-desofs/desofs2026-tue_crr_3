@@ -11,9 +11,9 @@ public sealed class SessionRepository : ISessionRepository
 
     public SessionRepository(TeaShopDbContext db) => _db = db;
 
-    public async Task<Session?> FindByTokenAsync(string rawToken, CancellationToken ct)
+    public async Task<Session?> FindByTokenAsync(string tokenValue, CancellationToken ct)
     {
-        var tokenHash = Session.HashToken(rawToken);
+        var tokenHash = Session.HashToken(tokenValue);
 
         return await _db.Sessions
             .FirstOrDefaultAsync(s => s.TokenHash == tokenHash, ct);

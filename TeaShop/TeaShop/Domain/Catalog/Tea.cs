@@ -40,4 +40,13 @@ public sealed class Tea
 
         Stock = newStock;
     }
+    public void AdjustStock(int quantityChange)
+    {
+    var newStock = Stock + quantityChange;
+
+    if (newStock < 0)
+        throw new DomainException("Stock cannot be negative.");
+
+    Stock = newStock;
+    }
 }

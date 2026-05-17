@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeaShop.Application.Orders;
 using TeaShop.Application.Orders.DTOs;
+using TeaShop.Domain.Exceptions;
+using TeaShop.Domain.Users;
 
 namespace TeaShop.Presentation.Controllers;
 
@@ -71,6 +73,40 @@ public sealed class OrderController : ControllerBase
         catch (KeyNotFoundException)
         {
             return NotFound();
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> GetAllOrders(CancellationToken ct)
+    {
+        var result = await _orderService.GetAllOrdersAsync(ct);
+        return Ok(result);
+    }
+
+    [HttpPut("{orderId}/status")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> UpdateOrderStatus(
+        Guid id,
+        [FromBody] UpdateOrderStatusRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            var result = await _orderService.UpdateOrderStatusAsync(id, request, ct);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (DomainException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
     }
 

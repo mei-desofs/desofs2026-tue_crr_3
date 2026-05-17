@@ -1,10 +1,11 @@
 
+using Microsoft.AspNetCore.Identity;
 using TeaShop.Application;
 using TeaShop.Infrastructure;
 using TeaShop.Infrastructure.Data;
-using TeaShop.Infrastructure.Persistence.Seed;
-using TeaShop.Infrastructure.RateLimiting;
 using TeaShop.Infrastructure.Middleware;
+using TeaShop.Infrastructure.Persistence.Seed;
+using TeaShop.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+
 
 builder.Services.AddTeaShopRateLimiting();
 builder.Services.AddAuthentication(options =>
@@ -38,14 +40,24 @@ builder.Services.AddAuthorization(opts =>
         p.RequireAuthenticatedUser()
          .RequireRole("ADMIN"));
 });
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5); 
+    options.Lockout.MaxFailedAccessAttempts = 5; 
+    options.Lockout.AllowedForNewUsers = true; 
+});
+
 builder.Services.AddScoped<AdminSeeder>();
 
 
 var app = builder.Build();
 
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("CI"))
 {
+    app.UseDeveloperExceptionPage();
+
     app.MapOpenApi();
 
     app.UseSwaggerUI(options =>
@@ -55,16 +67,20 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    app.UseMiddleware<GenericExceptionMiddleware>();
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
+
+
 
 
 app.UseRateLimiter();
 
 app.UseInfrastructureMiddleware();
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
@@ -76,4 +92,4 @@ using (var scope = app.Services.CreateScope())
     await seeder.SeedAsync(CancellationToken.None);
 }
 
-app.Run();
+await app.RunAsync();

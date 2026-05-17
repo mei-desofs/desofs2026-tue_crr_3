@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7" />
@@ -19,6 +20,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TeaShop\TeaShop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Unit\Domain\Catalog\" />
   </ItemGroup>
 
 </Project>
