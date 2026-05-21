@@ -234,8 +234,10 @@ public sealed class OrderService
 
     private static string SanitizeFileName(string input)
     {
-        var invalidChars = Path.GetInvalidFileNameChars();
+        char[] invalidChars = { '/', '\\', ':', '*', '?', '"', '<', '>', '|', '\0' };
+
         var sanitized = string.Concat(input.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
+
 
         // dots are counted as valid characters in some contexts, so we need to explicitly remove the .. to stop path traversal attacks
         while (sanitized.Contains(".."))
