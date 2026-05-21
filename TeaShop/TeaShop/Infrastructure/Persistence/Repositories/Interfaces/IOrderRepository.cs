@@ -9,4 +9,5 @@ public interface IOrderRepository
     Task<List<Order>> GetAllAsync(CancellationToken ct);
     Task<Order?> GetByIdAsync(Guid orderId, CancellationToken ct);
     Task UpdateAsync(Order order, CancellationToken ct);
+    Task<List<Order>> GetOrdersInDateRangeAsync(DateTime startDate, DateTime endDate, CancellationToken ct);
 }

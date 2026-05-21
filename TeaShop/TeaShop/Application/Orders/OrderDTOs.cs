@@ -28,3 +28,8 @@ public sealed record OrderDto(
 public sealed record UpdateOrderStatusRequest(
     [Required] string Status
 );
+
+public sealed record ExportSalesReportRequest(
+    string ReportName,
+    DateTime StartDate,
+    DateTime EndDate);
