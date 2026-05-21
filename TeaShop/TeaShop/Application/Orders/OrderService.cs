@@ -4,6 +4,7 @@ using TeaShop.Application.Orders.DTOs;
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Orders;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
+using System.Globalization;
 
 namespace TeaShop.Application.Orders;
 
@@ -221,7 +222,10 @@ public sealed class OrderService
             var escapedOrderId = EscapeCsvField(order.Id.ToString());
             var escapedUserId = EscapeCsvField(order.UserId.ToString());
 
-            writer.WriteLine($"{escapedOrderId},{escapedUserId},{escapedStatus},{order.CreatedAt:O},{totalAmount}");
+            // Format total amount to guarantee . is always used as separator 
+            var formattedTotal = totalAmount.ToString("F2", CultureInfo.InvariantCulture);
+
+            writer.WriteLine($"{escapedOrderId},{escapedUserId},{escapedStatus},{order.CreatedAt:O},{formattedTotal}");
         }
 
         writer.Flush();
@@ -232,6 +236,12 @@ public sealed class OrderService
     {
         var invalidChars = Path.GetInvalidFileNameChars();
         var sanitized = string.Concat(input.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
+
+        // dots are counted as valid characters in some contexts, so we need to explicitly remove the .. to stop path traversal attacks
+        while (sanitized.Contains(".."))
+        {
+            sanitized = sanitized.Replace("..", "");
+        }
 
         sanitized = Path.GetFileName(sanitized);
 

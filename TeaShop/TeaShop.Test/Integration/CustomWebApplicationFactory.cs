@@ -13,6 +13,7 @@ namespace TeaShop.IntegrationTests;
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     public ITeaRepository TeaRepositoryMock { get; } = Substitute.For<ITeaRepository>();
+    public ISessionRepository SessionRepositoryMock { get; } = Substitute.For<ISessionRepository>();
     public IPasswordPolicyChecker PasswordPolicyCheckerMock { get; } = Substitute.For<IPasswordPolicyChecker>();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -23,12 +24,18 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             services.RemoveAll<ITeaRepository>();
             services.RemoveAll<IPasswordPolicyChecker>();
+            services.RemoveAll<ISessionRepository>();
 
+            services.AddSingleton(SessionRepositoryMock);
             services.AddSingleton(TeaRepositoryMock);
             services.AddSingleton(PasswordPolicyCheckerMock);
 
             PasswordPolicyCheckerMock.IsValidAsync(Arg.Any<string>())
                 .Returns(true);
         });
+    }
+    public static Session CreateMockSession(Guid userId, string role)
+    {
+        return Session.Create(userId, role);
     }
 }
