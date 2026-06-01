@@ -15,6 +15,7 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         b.Property(o => o.Status).IsRequired();
 
         b.Property(o => o.CreatedAt).IsRequired();
+        b.HasIndex(o => o.CreatedAt); // index to optimize queries by creation date(report)
 
         b.HasMany(o => o.Items)
          .WithOne()

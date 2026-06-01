@@ -437,4 +437,89 @@ public class OrderServiceTests
             .WithMessage("*Invalid order id*");
         await _orderRepository.DidNotReceive().UpdateAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
     }
+
+    // ExportSalesReportAsync
+
+    [Fact]
+    public async Task ExportSalesReportAsync_ValidRequest_ShouldReturnCsvContent()
+    {
+        var startDate = DateTime.UtcNow.AddDays(-7);
+        var endDate = DateTime.UtcNow;
+        var request = new ExportSalesReportRequest("Quarterly Report", startDate, endDate);
+
+        var tea = ValidTea();
+        var orders = new List<Order>
+        {
+            Order.Create(Guid.NewGuid(), [OrderItem.Create(tea.Id, 2, 10.0m)])
+        };
+
+        _orderRepository.GetOrdersInDateRangeAsync(startDate, endDate, Arg.Any<CancellationToken>())
+            .Returns(orders);
+
+        var (content, contentType, fileName) = await _sut.ExportSalesReportAsync(request, CancellationToken.None);
+
+        contentType.Should().Be("text/csv");
+        fileName.Should().StartWith("Quarterly Report_");
+        fileName.Should().EndWith(".csv");
+        content.Should().NotBeEmpty();
+
+        var csvText = System.Text.Encoding.UTF8.GetString(content);
+        csvText.Should().Contain("OrderId,UserId,Status,CreatedAt,TotalAmount");
+        csvText.Should().Contain("20.00");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task ExportSalesReportAsync_EmptyReportName_ShouldThrowArgumentException(string? invalidName)
+    {
+        
+        var request = new ExportSalesReportRequest(invalidName!, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+
+        var act = async () => await _sut.ExportSalesReportAsync(request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Report name is required.");
+        await _orderRepository.DidNotReceive().GetOrdersInDateRangeAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExportSalesReportAsync_StartDateAfterEndDate_ShouldThrowArgumentException()
+    {
+        var request = new ExportSalesReportRequest("Report", DateTime.UtcNow.AddDays(1), DateTime.UtcNow);
+
+        var act = async () => await _sut.ExportSalesReportAsync(request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Start date must be earlier than or equal to end date.");
+    }
+
+    [Fact]
+    public async Task ExportSalesReportAsync_PathTraversalAttempt_ShouldSanitizeFileName()
+    {
+        var request = new ExportSalesReportRequest(@"..\..\..\Secret_Report?", DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+        _orderRepository.GetOrdersInDateRangeAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Order>());
+
+        var (_, _, fileName) = await _sut.ExportSalesReportAsync(request, CancellationToken.None);
+
+        fileName.Should().NotContain("..");
+        fileName.Should().NotContain(@"\");
+        fileName.Should().NotContain("/");
+        fileName.Should().NotContain("?");
+        fileName.Should().StartWith("Secret_Report_");
+    }
+
+    [Fact]
+    public async Task ExportSalesReportAsync_PurelyInvalidReportName_ShouldFallbackToDefaultName()
+    {
+        var request = new ExportSalesReportRequest(@"?:*|", DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+        _orderRepository.GetOrdersInDateRangeAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Order>());
+
+        var (_, _, fileName) = await _sut.ExportSalesReportAsync(request, CancellationToken.None);
+
+        fileName.Should().StartWith("SalesReport_");
+    }
 }

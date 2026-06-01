@@ -1,10 +1,12 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 using TeaShop.Application.Orders;
 using TeaShop.Application.Orders.DTOs;
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Users;
+using TeaShop.Infrastructure.Security;
 
 namespace TeaShop.Presentation.Controllers;
 
@@ -105,6 +107,25 @@ public sealed class OrderController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
         catch (DomainException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("export")]
+    [Authorize(Roles = Roles.Admin)]
+    [EnableRateLimiting(RateLimiting.ReportPolicy)]
+    public async Task<IActionResult> ExportSalesReport(
+        [FromBody] ExportSalesReportRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            var (content, contentType, fileName) = await _orderService.ExportSalesReportAsync(request, ct);
+
+            return File(content, contentType, fileName);
+        }
+        catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
         }

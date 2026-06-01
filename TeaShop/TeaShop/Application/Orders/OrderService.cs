@@ -1,8 +1,10 @@
+using System.Text;
 using TeaShop.Application.Catalog.DTOs;
 using TeaShop.Application.Orders.DTOs;
-using TeaShop.Domain.Orders;
 using TeaShop.Domain.Exceptions;
+using TeaShop.Domain.Orders;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
+using System.Globalization;
 
 namespace TeaShop.Application.Orders;
 
@@ -183,5 +185,94 @@ public sealed class OrderService
                 i.UnitPrice
             )).ToList()
         );
+    }
+
+    public async Task<(byte[] Content, string ContentType, string FileName)> ExportSalesReportAsync(
+        ExportSalesReportRequest request,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.ReportName))
+            throw new ArgumentException("Report name is required.");
+
+        if (request.StartDate > request.EndDate)
+            throw new ArgumentException("Start date must be earlier than or equal to end date.");
+
+        var orders = await _orderRepository.GetOrdersInDateRangeAsync(request.StartDate, request.EndDate, ct);
+
+        var csvBytes = GenerateCsvBuffer(orders);
+
+        var sanitizedFileName = SanitizeFileName(request.ReportName);
+        var finalFileName = $"{sanitizedFileName}_{DateTime.UtcNow:yyyyMMddHHmmss}.csv";
+
+        return (csvBytes, "text/csv", finalFileName);
+    }
+
+    private static byte[] GenerateCsvBuffer(List<Order> orders)
+    {
+        using var ms = new MemoryStream();
+        using var writer = new StreamWriter(ms, Encoding.UTF8);
+
+        writer.WriteLine("OrderId,UserId,Status,CreatedAt,TotalAmount");
+
+        foreach (var order in orders)
+        {
+            var totalAmount = order.Items.Sum(i => i.Quantity * i.UnitPrice);
+
+            var escapedStatus = EscapeCsvField(order.Status.ToString());
+            var escapedOrderId = EscapeCsvField(order.Id.ToString());
+            var escapedUserId = EscapeCsvField(order.UserId.ToString());
+
+            // Format total amount to guarantee . is always used as separator 
+            var formattedTotal = totalAmount.ToString("F2", CultureInfo.InvariantCulture);
+
+            writer.WriteLine($"{escapedOrderId},{escapedUserId},{escapedStatus},{order.CreatedAt:O},{formattedTotal}");
+        }
+
+        writer.Flush();
+        return ms.ToArray();
+    }
+
+    private static string SanitizeFileName(string input)
+    {
+        char[] invalidChars = { '/', '\\', ':', '*', '?', '"', '<', '>', '|', '\0' };
+
+        var sanitized = string.Concat(input.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
+
+
+        // dots are counted as valid characters in some contexts, so we need to explicitly remove the .. to stop path traversal attacks
+        while (sanitized.Contains(".."))
+        {
+            sanitized = sanitized.Replace("..", "");
+        }
+
+        sanitized = Path.GetFileName(sanitized);
+
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            return "SalesReport";
+        }
+
+        return sanitized;
+    }
+
+    private static string EscapeCsvField(string field)
+    {
+        if (string.IsNullOrEmpty(field))
+            return string.Empty;
+
+        // Stops a name in the system from being interpreted as a formula when opened in Excel 
+        char[] formulaTriggers = { '=', '+', '-', '@', '\t', '\r' };
+        if (formulaTriggers.Any(field.StartsWith))
+        {
+            field = "'" + field;
+        }
+
+        // Standard escaping for CSV formatting
+        if (field.Contains(',') || field.Contains('"') || field.Contains('\n') || field.Contains('\r'))
+        {
+            field = "\"" + field.Replace("\"", "\"\"") + "\"";
+        }
+
+        return field;
     }
 }

@@ -52,4 +52,14 @@ public sealed class OrderRepository : IOrderRepository
         await _context.SaveChangesAsync(ct);
     }
 
+    public async Task<List<Order>> GetOrdersInDateRangeAsync(DateTime startDate, DateTime endDate, CancellationToken ct)
+    {
+        return await _context.Orders
+            .AsNoTracking() // as it's a Read-only query we can disable tracking for better performance
+            .Include(o => o.Items) 
+            .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(ct);
+    }
+
 }

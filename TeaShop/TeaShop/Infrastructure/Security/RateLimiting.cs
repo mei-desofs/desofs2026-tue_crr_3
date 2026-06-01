@@ -1,6 +1,6 @@
-using System.Threading.RateLimiting;
-
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 
 namespace TeaShop.Infrastructure.Security;
 
@@ -8,6 +8,7 @@ public static class RateLimiting
 {
     public const string AuthPolicy = "auth";
     public const string GeneralPolicy = "general";
+    public const string ReportPolicy = "report"; 
 
     public static IServiceCollection AddTeaShopRateLimiting(this IServiceCollection services)
     {
@@ -33,9 +34,25 @@ public static class RateLimiting
                         QueueLimit = 10
                     }));
 
+            opts.AddPolicy(ReportPolicy, context =>
+            {
+
+                var partitionKey = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                                   ?? context.Connection.RemoteIpAddress?.ToString()
+                                   ?? "anonymous";
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: partitionKey,
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 3,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    });
+            });
             opts.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
         });
+            return services;
 
-        return services;
-    }
+        }
 }
