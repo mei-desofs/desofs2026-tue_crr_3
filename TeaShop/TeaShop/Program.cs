@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using TeaShop.Application;
 using TeaShop.Infrastructure;
 using TeaShop.Infrastructure.Data;
@@ -7,6 +8,7 @@ using TeaShop.Infrastructure.Middleware;
 using TeaShop.Infrastructure.Persistence.Seed;
 using TeaShop.Infrastructure.Security;
 
+[assembly:ApiController]
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -53,6 +55,14 @@ builder.Services.AddScoped<AdminSeeder>();
 
 var app = builder.Build();
 
+app.UseMiddleware<GenericExceptionMiddleware>();
+
+var policyCollection = new HeaderPolicyCollection()
+    .AddDefaultSecurityHeaders()
+    .AddCustomHeader("Cross-Origin-Resource-Policy", "same-origin");
+
+app.UseSecurityHeaders(policyCollection);
+
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("CI"))
 {
@@ -67,7 +77,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("CI"))
 }
 else
 {
-    app.UseMiddleware<GenericExceptionMiddleware>();
     app.UseHsts();
     app.UseHttpsRedirection();
 }
