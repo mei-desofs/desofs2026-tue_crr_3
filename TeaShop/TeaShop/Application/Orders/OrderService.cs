@@ -1,10 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Text;
 using TeaShop.Application.Catalog.DTOs;
 using TeaShop.Application.Orders.DTOs;
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Orders;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
-using System.Globalization;
 
 namespace TeaShop.Application.Orders;
 
@@ -63,9 +64,18 @@ public sealed class OrderService
 
             var order = Order.Create(userId, orderItems);
 
-            await _orderRepository.AddAsync(order, ct);
+            
 
-            await _unitOfWork.CommitAsync(ct);
+                await _orderRepository.AddAsync(order, ct);
+
+            try
+            {
+                await _unitOfWork.CommitAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException) 
+            {
+                throw new DomainException("This item's stock was updated by another transaction");
+            }
 
             return new OrderDto(
                 order.Id,
