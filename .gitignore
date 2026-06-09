@@ -19,6 +19,7 @@ out/
 appsettings.Development.json
 appsettings.Production.json
 **/secrets.json
+TeaShop/TeaShop/Deployment/certs/
 
 # Coverage
 coverage/
