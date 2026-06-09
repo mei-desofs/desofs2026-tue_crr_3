@@ -73,3 +73,8 @@
 ### BR-06 Financial Integrity
 - Financial calculations shall use precise decimal arithmetic.
 - Client-supplied monetary values shall not be trusted.
+
+### BR-07 Password Policy
+- Passwords shall not match a maintained list of commonly used passwords.
+- Context-specific words such as the application name, company name, user email, username, role names, or tea-related terms shall not be accepted as passwords.
+- Password validation shall be applied during account registration and password change operations.
