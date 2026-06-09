@@ -45,6 +45,7 @@
 * **NFR-10 (Database Constraint):** The system must persist data using a relational database engine.
 * **NFR-11 (Architectural Style):** The backend application must be implemented as a web server exposing a RESTful Application Programming Interface.
 
+
 ## 3. Validation and Business Logic Requirements
 
 ### BR-01 Stock Management
