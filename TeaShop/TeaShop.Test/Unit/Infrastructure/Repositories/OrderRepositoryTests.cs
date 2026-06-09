@@ -4,6 +4,7 @@ using TeaShop.Infrastructure.Data;
 using TeaShop.Infrastructure.Persistence.Repositories;
 using Xunit;
 using FluentAssertions;
+using TeaShop.Infrastructure.Persistence;
 
 namespace TeaShop.Test.Unit.Infrastructure;
 

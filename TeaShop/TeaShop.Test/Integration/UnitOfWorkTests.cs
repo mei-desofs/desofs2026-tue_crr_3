@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using TeaShop.Domain.Catalog;
 using TeaShop.Domain.Products;
-using TeaShop.Infrastructure.Data;
+using TeaShop.Infrastructure.Persistence;
 using TeaShop.Infrastructure.Persistence.Repositories;
 using Xunit;
 
