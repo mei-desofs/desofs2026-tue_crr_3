@@ -44,3 +44,32 @@
 ### 2.6 Plus (+) Constraints
 * **NFR-10 (Database Constraint):** The system must persist data using a relational database engine.
 * **NFR-11 (Architectural Style):** The backend application must be implemented as a web server exposing a RESTful Application Programming Interface.
+
+
+## 3. Validation and Business Logic Requirements
+
+### BR-01 Stock Management
+- Stock values shall never become negative.
+- Only users with MANAGER or ADMIN roles may modify inventory levels.
+- All stock modifications shall be validated before persistence.
+
+### BR-02 Order Creation
+- Orders shall only be created when sufficient stock exists.
+- Product prices shall always be obtained from the database and never from client-supplied values.
+- Stock allocation shall occur atomically with order creation.
+
+### BR-03 Order Access
+- Customers shall only be able to access their own order history.
+- Order ownership shall be validated using the authenticated user identity.
+
+### BR-04 Order Cancellation
+- Only the owner of an order may cancel it.
+- Only orders in the PENDING state may be cancelled.
+
+### BR-05 Transaction Integrity
+- Inventory updates and order creation shall be performed as a single business transaction.
+- Concurrent operations shall not result in inconsistent stock levels.
+
+### BR-06 Financial Integrity
+- Financial calculations shall use precise decimal arithmetic.
+- Client-supplied monetary values shall not be trusted.
