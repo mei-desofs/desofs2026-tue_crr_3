@@ -25,7 +25,12 @@ if (builder.Environment.IsProduction())
     {
         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 
-        options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
+        var networkIp = builder.Configuration["NetworkSettings:KnownNetworkIP"];
+        var networkPrefix = int.Parse(builder.Configuration["NetworkSettings:KnownNetworkPrefix"] ?? "12");
+
+        if (!string.IsNullOrEmpty(networkIp)){
+    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse(networkIp), networkPrefix));
+    }
     });
 }
 
