@@ -10,6 +10,8 @@ public sealed class Tea
     public int Stock { get; private set; }
     public Guid CategoryId { get; private set; }
 
+    public uint Version { get; private set; }
+
     private Tea() { }
 
     public static Tea Create(string name, decimal price, int stock, Guid categoryId)

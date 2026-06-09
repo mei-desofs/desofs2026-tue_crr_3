@@ -5,6 +5,7 @@ using TeaShop.Application;
 using TeaShop.Infrastructure;
 using TeaShop.Infrastructure.Data;
 using TeaShop.Infrastructure.Middleware;
+using TeaShop.Infrastructure.Persistence;
 using TeaShop.Infrastructure.Persistence.Seed;
 using TeaShop.Infrastructure.Security;
 
