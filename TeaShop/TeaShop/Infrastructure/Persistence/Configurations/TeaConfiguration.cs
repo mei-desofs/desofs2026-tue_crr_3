@@ -1,30 +1,32 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TeaShop.Domain.Catalog;
+using TeaShop.Domain.Products;
 
 namespace TeaShop.Infrastructure.Persistence.Configurations;
 
 public sealed class TeaConfiguration : IEntityTypeConfiguration<Tea>
 {
-    public void Configure(EntityTypeBuilder<Tea> b)
+    public void Configure(EntityTypeBuilder<Tea> builder)
     {
-        b.HasKey(t => t.Id);
+        builder.ToTable("Teas");
 
-        b.Property(t => t.Name)
-         .HasMaxLength(150)
-         .IsRequired();
+        builder.HasKey(t => t.Id);
 
-        b.Property(t => t.Price)
-         .IsRequired()
-         .HasPrecision(18, 2);
+        builder.Property(t => t.Name)
+            .IsRequired()
+            .HasMaxLength(150);
 
-        b.Property(t => t.Stock)
-         .IsRequired();
+        builder.Property(t => t.Price)
+            .IsRequired()
+            .HasPrecision(10, 2);
 
-        b.Property(t => t.CategoryId)
-         .IsRequired();
+        builder.Property(t => t.Stock)
+            .IsRequired();
 
-     
+        builder.HasOne<Category>()
+            .WithMany()
+            .HasForeignKey(t => t.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

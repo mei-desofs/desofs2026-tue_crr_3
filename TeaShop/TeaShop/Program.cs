@@ -1,9 +1,10 @@
 
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using TeaShop.Application;
 using TeaShop.Infrastructure;
-using TeaShop.Infrastructure.Data;
 using TeaShop.Infrastructure.Middleware;
 using TeaShop.Infrastructure.Persistence;
 using TeaShop.Infrastructure.Persistence.Seed;
@@ -17,6 +18,16 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+
+if (builder.Environment.IsProduction())
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+        options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
+    });
+}
 
 
 builder.Services.AddTeaShopRateLimiting();
@@ -82,7 +93,10 @@ else
     app.UseHttpsRedirection();
 }
 
-
+if (app.Environment.IsProduction())
+{
+    app.UseForwardedHeaders();
+}
 
 
 
