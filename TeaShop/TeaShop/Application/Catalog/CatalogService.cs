@@ -18,6 +18,12 @@ public sealed class CatalogService
         _teaRepository = teaRepository;
         _settings = settings.Value;
 
+        if (string.IsNullOrWhiteSpace(_settings.StoragePath))
+            throw new DomainValidationException("Image storage path is not configured.");
+
+        if (Path.IsPathRooted(_settings.StoragePath))
+            throw new DomainValidationException("Image storage path must be relative.");
+
         _resolvedStoragePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _settings.StoragePath);
 
         if (!Directory.Exists(_resolvedStoragePath))
