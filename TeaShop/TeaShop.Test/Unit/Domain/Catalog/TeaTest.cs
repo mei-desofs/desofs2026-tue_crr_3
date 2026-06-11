@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using System;
 using TeaShop.Domain.Catalog;
 using TeaShop.Domain.Exceptions;
 using Xunit;
@@ -12,7 +13,6 @@ public class TeaTests
     private const int ValidStock = 50;
     private static readonly Guid ValidCategoryId = Guid.NewGuid();
 
-
     [Fact]
     public void Create_ValidInputs_ShouldSucceed()
     {
@@ -23,6 +23,9 @@ public class TeaTests
         tea.Price.Should().Be(ValidPrice);
         tea.Stock.Should().Be(ValidStock);
         tea.CategoryId.Should().Be(ValidCategoryId);
+
+        // Assert: A newly created tea must not have an image initially
+        tea.Image.Should().BeNull();
     }
 
     [Fact]
@@ -64,8 +67,6 @@ public class TeaTests
 
         act.Should().Throw<DomainException>().WithMessage("Stock cannot be negative.");
     }
-
-
 
     [Fact]
     public void Update_ValidInputs_ShouldUpdateAllProperties()
@@ -146,4 +147,54 @@ public class TeaTests
         act.Should().Throw<DomainException>().WithMessage("Stock cannot be negative.");
     }
 
+    
+
+    [Fact]
+    public void SetImage_ValidInputs_ShouldSetImageProperty()
+    {
+        var tea = Tea.Create(ValidName, ValidPrice, ValidStock, ValidCategoryId);
+        var fileName = "earl_grey_image.png";
+        var filePath = "/secure/uploads/earl_grey_image.png";
+        var sizeBytes = 1048576L;
+
+        tea.SetImage(fileName, filePath, sizeBytes);
+
+        tea.Image.Should().NotBeNull();
+        tea.Image!.Id.Should().NotBeEmpty();
+        tea.Image.TeaId.Should().Be(tea.Id);
+        tea.Image.FileName.Should().Be(fileName);
+        tea.Image.FilePath.Should().Be(filePath);
+        tea.Image.SizeBytes.Should().Be(sizeBytes);
+        tea.Image.UploadedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public void SetImage_AlreadyHasImage_ShouldOverwriteWithNewImage()
+    {
+        var tea = Tea.Create(ValidName, ValidPrice, ValidStock, ValidCategoryId);
+        tea.SetImage("old.png", "/secure/old.png", 500L);
+
+        var newFileName = "new.png";
+        var newFilePath = "/secure/new.png";
+        var newSizeBytes = 1000L;
+
+        
+        tea.SetImage(newFileName, newFilePath, newSizeBytes);
+
+        tea.Image.Should().NotBeNull();
+        tea.Image!.FileName.Should().Be(newFileName);
+        tea.Image.FilePath.Should().Be(newFilePath);
+        tea.Image.SizeBytes.Should().Be(newSizeBytes);
+    }
+
+    [Fact]
+    public void RemoveImage_WithExistingImage_ShouldSetImageToNull()
+    {
+        var tea = Tea.Create(ValidName, ValidPrice, ValidStock, ValidCategoryId);
+        tea.SetImage("matcha.png", "/secure/matcha.png", 1024L);
+
+        tea.RemoveImage();
+
+        tea.Image.Should().BeNull();
+    }
 }

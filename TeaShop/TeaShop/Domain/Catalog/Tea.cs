@@ -12,6 +12,9 @@ public sealed class Tea
 
     public uint Version { get; private set; }
 
+    public TeaImage? Image { get; private set; }
+
+
     private Tea() { }
 
     public static Tea Create(string name, decimal price, int stock, Guid categoryId)
@@ -60,5 +63,15 @@ public sealed class Tea
             throw new DomainException("Stock cannot be negative.");
 
         Stock = newStock;
+    }
+
+    public void SetImage(string fileName, string filePath, long sizeBytes)
+    {
+        Image = TeaImage.Create(Id, fileName, filePath, sizeBytes);
+    }
+
+    public void RemoveImage()
+    {
+        Image = null;
     }
 }

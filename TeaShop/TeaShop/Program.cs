@@ -36,6 +36,7 @@ if (builder.Environment.IsProduction())
 
 
 builder.Services.AddTeaShopRateLimiting();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = "Bearer";
@@ -107,10 +108,10 @@ if (app.Environment.IsProduction())
 
 app.UseRateLimiter();
 
-app.UseInfrastructureMiddleware();
-
 app.UseAuthentication();
+app.UseInfrastructureMiddleware();
 app.UseAuthorization();
+
 app.MapControllers();
 
 

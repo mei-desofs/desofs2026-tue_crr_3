@@ -17,23 +17,25 @@ public sealed class Session
     private Session() { }
 
   
-    public static Session Create(Guid userId, string userRole, TimeSpan? lifetime = null)
+    public static (Session Session, string RawToken) Create(Guid userId, string userRole, TimeSpan? lifetime = null)
     {
         if (!Roles.IsValid(userRole))
             throw new DomainException($"'{userRole}' is not a valid role.");
 
         var duration = lifetime ?? TimeSpan.FromMinutes(30);
+        var rawToken = SessionToken.Generate().ToString();
 
-        return new Session
+        var session = new Session
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             UserRole = userRole,
-            TokenHash = HashToken(SessionToken.Generate().ToString()),
+            TokenHash = HashToken(rawToken), // Store the secure hash
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.Add(duration),
             IsRevoked = false
         };
+        return (session, rawToken);
     }
 
     public bool IsValid() => !IsRevoked && DateTime.UtcNow < ExpiresAt;

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Text;
-using TeaShop.Application.Catalog.DTOs;
 using TeaShop.Application.Orders.DTOs;
 using TeaShop.Domain.Exceptions;
 using TeaShop.Domain.Orders;

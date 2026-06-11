@@ -80,7 +80,7 @@ public class OrderTests : IClassFixture<CustomWebApplicationFactory>
 
         _factory.SessionRepositoryMock
             .FindByTokenAsync("user-token", Arg.Any<CancellationToken>())
-            .Returns(userSession);
+            .Returns(userSession.Session);
 
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "user-token");
 
@@ -122,7 +122,7 @@ public class OrderTests : IClassFixture<CustomWebApplicationFactory>
 
         _factory.SessionRepositoryMock
             .FindByTokenAsync("admin-token", Arg.Any<CancellationToken>())
-            .Returns(adminSession);
+            .Returns(adminSession.Session);
 
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "admin-token");
 
