@@ -24,7 +24,7 @@ public sealed class CatalogService
         if (Path.IsPathRooted(_settings.StoragePath))
             throw new DomainException("Image storage path must be relative.");
 
-        _resolvedStoragePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _settings.StoragePath);
+        _resolvedStoragePath = Path.GetFullPath(_settings.StoragePath, AppDomain.CurrentDomain.BaseDirectory);
 
         if (!Directory.Exists(_resolvedStoragePath))
         {
