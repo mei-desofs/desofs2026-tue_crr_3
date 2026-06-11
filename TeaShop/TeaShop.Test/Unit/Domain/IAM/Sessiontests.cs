@@ -14,7 +14,7 @@ public class SessionTests
     [Fact]
     public void Create_ValidInputs_ShouldSucceed()
     {
-        var (session, rawToken) = Session.Create(_userId, Roles.Customer);
+        var (session, _) = Session.Create(_userId, Roles.Customer);
 
         session.Id.Should().NotBeEmpty();
         session.UserId.Should().Be(_userId);
@@ -35,7 +35,7 @@ public class SessionTests
     public void Create_WithCustomLifetime_ShouldSetCorrectExpiry()
     {
         var lifetime = TimeSpan.FromHours(1);
-        var (session, rawToken) = Session.Create(_userId, Roles.Customer, lifetime);
+        var (session, _) = Session.Create(_userId, Roles.Customer, lifetime);
 
         session.ExpiresAt.Should()
             .BeCloseTo(DateTime.UtcNow.Add(lifetime), TimeSpan.FromSeconds(2));
@@ -45,14 +45,14 @@ public class SessionTests
     [Fact]
     public void IsValid_FreshSession_ShouldReturnTrue()
     {
-        var (session, rawToken) = Session.Create(_userId, Roles.Customer);
+        var (session, _) = Session.Create(_userId, Roles.Customer);
         session.IsValid().Should().BeTrue();
     }
 
     [Fact]
     public void IsValid_RevokedSession_ShouldReturnFalse()
     {
-        var (session, rawToken) = Session.Create(_userId, Roles.Customer);
+        var (session, _) = Session.Create(_userId, Roles.Customer);
         session.Revoke();
         session.IsValid().Should().BeFalse();
     }
@@ -60,7 +60,7 @@ public class SessionTests
     [Fact]
     public void IsValid_ExpiredSession_ShouldReturnFalse()
     {
-        var (session, rawToken) = Session.Create(_userId, Roles.Customer, TimeSpan.FromSeconds(-1));
+        var (session, _) = Session.Create(_userId, Roles.Customer, TimeSpan.FromSeconds(-1));
         session.IsValid().Should().BeFalse();
     }
 
@@ -68,7 +68,7 @@ public class SessionTests
     [Fact]
     public void Revoke_ShouldSetIsRevokedToTrue()
     {
-        var (session, rawToken) = Session.Create(_userId, Roles.Customer);
+        var (session, _) = Session.Create(_userId, Roles.Customer);
         session.Revoke();
         session.IsRevoked.Should().BeTrue();
     }
@@ -76,7 +76,7 @@ public class SessionTests
     [Fact]
     public void Revoke_AlreadyRevoked_ShouldThrowDomainException()
     {
-        var (session, rawToken) = Session.Create(_userId, Roles.Customer);
+        var (session, _) = Session.Create(_userId, Roles.Customer);
         session.Revoke();
 
         var act = () => session.Revoke();
