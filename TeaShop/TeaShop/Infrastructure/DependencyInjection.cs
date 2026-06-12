@@ -24,7 +24,12 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.UserAgent.ParseAdd("TeaShop-Application/1.0");
 
             return new HaveIBeenPwnedClient(new HaveIBeenPwnedClientSettings { ApplicationName = "TeaShop" }, client);
-        });
+        })
+        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+             AllowAutoRedirect = false
+         });
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
