@@ -1,15 +1,9 @@
 
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System.Net;
-using TeaShop.Domain.Catalog;
-using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 using System.Text;
 using System.Text.Json;
 using TeaShop.IntegrationTests;
@@ -130,4 +124,42 @@ public class CatalogTests : IClassFixture<CustomWebApplicationFactory>
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task GetImage_WhenNoImageExists_ShouldReturn404()
+    {
+        var nonExistentTeaId = Guid.NewGuid();
+
+        var response = await _client.GetAsync($"/api/catalog/{nonExistentTeaId}/image");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task UploadImage_WithoutAuthentication_ShouldReturn401()
+    {
+        var teaId = Guid.NewGuid();
+        using var form = new MultipartFormDataContent();
+
+        var fileContent = new ByteArrayContent(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }); // Dummy PNG bytes
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+
+        form.Add(fileContent, "file", "test.png");
+
+        var response = await _client.PostAsync($"/api/catalog/{teaId}/image", form);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task DeleteImage_WithoutAuthentication_ShouldReturn401()
+    {
+        var teaId = Guid.NewGuid();
+
+        var response = await _client.DeleteAsync($"/api/catalog/{teaId}/image");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+
 }

@@ -34,7 +34,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 .Returns(true);
         });
     }
-    public static Session CreateMockSession(Guid userId, string role)
+    public static (Session Session, string RawToken) CreateMockSession(Guid userId, string role)
     {
         return Session.Create(userId, role);
     }

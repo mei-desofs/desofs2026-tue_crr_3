@@ -100,7 +100,7 @@ public class AuthServiceTests
     [Fact]
     public async Task LogoutAsync_ValidSession_ShouldRevokeIt()
     {
-        var session = Session.Create(Guid.NewGuid(), Roles.Customer);
+        var (session,_) = Session.Create(Guid.NewGuid(), Roles.Customer);
         _sessions.GetByIdAsync(session.Id, CancellationToken.None).Returns(session);
 
         await _sut.LogoutAsync(session.Id, CancellationToken.None);

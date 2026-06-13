@@ -41,14 +41,14 @@ public sealed class AuthService
         var user = User.CreateCustomer(req.Email, _hasher.Hash(req.Password));
         await _users.AddAsync(user, ct);
 
-        var session = Session.Create(user.Id, user.Role);
+        var (session, rawToken) = Session.Create(user.Id, user.Role);
         await _sessions.AddAsync(session, ct);
         await _users.SaveChangesAsync(ct);
 
         _logger.LogInformation("User registered. EmailHash: {Hash}",
             HashEmail(req.Email));
 
-        return new AuthResponse(session.TokenHash, session.ExpiresAt, user.Role);
+        return new AuthResponse(rawToken, session.ExpiresAt, user.Role);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest req, CancellationToken ct)
@@ -89,13 +89,13 @@ public sealed class AuthService
         user.ResetLoginAttempts();
         await _users.SaveChangesAsync(ct);
 
-        var session = Session.Create(user.Id, user.Role);
+        var (session, rawToken) = Session.Create(user.Id, user.Role);
         await _sessions.AddAsync(session, ct);
         await _sessions.SaveChangesAsync(ct);
 
         _logger.LogInformation("Successful login. UserId: {UserId}", user.Id);
 
-        return new AuthResponse(session.TokenHash, session.ExpiresAt, user.Role);
+        return new AuthResponse(rawToken, session.ExpiresAt, user.Role);
     }
 
     public async Task LogoutAsync(Guid sessionId, CancellationToken ct)

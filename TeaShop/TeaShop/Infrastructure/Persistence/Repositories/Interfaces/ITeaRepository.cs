@@ -10,5 +10,7 @@ public interface ITeaRepository
     void Remove(Tea tea);
     Task SaveChangesAsync(CancellationToken ct);
     Task UpdateAsync(Tea tea, CancellationToken ct);
+    Task<Tea?> GetByIdWithImagesAsync(Guid id, CancellationToken ct);
+
 
 }

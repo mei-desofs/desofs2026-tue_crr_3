@@ -28,5 +28,23 @@ public sealed class TeaConfiguration : IEntityTypeConfiguration<Tea>
             .WithMany()
             .HasForeignKey(t => t.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.OwnsOne(t => t.Image, imageBuilder =>
+        {
+            imageBuilder.Property(ti => ti.FileName)
+                .HasColumnName("ImageFileName")
+                .HasMaxLength(255);
+
+            imageBuilder.Property(ti => ti.FilePath)
+                .HasColumnName("ImageFilePath")
+                .HasMaxLength(500);
+
+            imageBuilder.Property(ti => ti.SizeBytes)
+                .HasColumnName("ImageSizeBytes");
+
+            imageBuilder.Property(ti => ti.UploadedAt)
+                .HasColumnName("ImageUploadedAt");
+        });
     }
+
 }

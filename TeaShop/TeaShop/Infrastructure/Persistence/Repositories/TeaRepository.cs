@@ -46,4 +46,11 @@ public sealed class TeaRepository : ITeaRepository
     {
         await _context.SaveChangesAsync(ct);
     }
+
+    public async Task<Tea?> GetByIdWithImagesAsync(Guid id, CancellationToken ct)
+    {
+        return await _context.Teas
+            .Include(t => t.Image) 
+            .FirstOrDefaultAsync(t => t.Id == id, ct);
+    }
 }
