@@ -1,3 +1,5 @@
+namespace TeaShop.Infrastructure.Security;
+
 public sealed class ImageStorageSettings
 {
     public string StoragePath { get; set; } = "SecureUploadedImages";

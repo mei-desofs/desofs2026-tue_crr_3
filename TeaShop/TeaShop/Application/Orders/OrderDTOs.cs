@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace TeaShop.Application.Orders.DTOs;
 
@@ -31,8 +32,8 @@ public sealed record UpdateOrderStatusRequest(
 
 public sealed record ExportSalesReportRequest(
     string ReportName,
-    DateTime StartDate,
-    DateTime EndDate) : IValidatableObject
+    [property: JsonRequired] DateTime StartDate,
+    [property: JsonRequired] DateTime EndDate) : IValidatableObject
 {
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
