@@ -1,12 +1,13 @@
+using AtleX.HaveIBeenPwned;
 using Microsoft.EntityFrameworkCore;
+using TeaShop.Domain.IAM;
 using TeaShop.Infrastructure.Data;
 using TeaShop.Infrastructure.Middleware;
+using TeaShop.Infrastructure.Persistence;
 using TeaShop.Infrastructure.Persistence.Repositories;
 using TeaShop.Infrastructure.Persistence.Repositories.Interfaces;
 using TeaShop.Infrastructure.Security;
-using AtleX.HaveIBeenPwned;
-using TeaShop.Domain.IAM;
-using TeaShop.Infrastructure.Persistence;
+using TeaShop.Infrastructure.Security.Interfaces;
 
 namespace TeaShop.Infrastructure;
 
@@ -18,6 +19,9 @@ public static class DependencyInjection
     {
         services.AddDbContext<TeaShopDbContext>(opts =>
             opts.UseNpgsql(config.GetConnectionString("DefaultConnection")));
+
+        services.Configure<ImageStorageSettings>(config.GetSection("ImageStorageSettings"));
+        services.AddScoped<IFileUploadService, FileUploadService>();
 
         services.AddHttpClient<IHaveIBeenPwnedClient, HaveIBeenPwnedClient>(client =>
         {
