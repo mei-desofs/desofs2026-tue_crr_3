@@ -108,7 +108,7 @@ jobs:
             target: 'http://localhost:8080/openapi/v1.json'
             format: openapi
             artifact_name: 'zap-api-report'
-            fail_action: false
+            fail_action: true
 
 
   artifact-scanning:
